@@ -1,0 +1,407 @@
+/* Reset & Base Styles */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Lucida Grande", "Segoe UI", Roboto, sans-serif;
+  background: radial-gradient(circle at 50% 25%, #2a313d 0%, #151921 100%);
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #000000;
+  overflow-x: hidden;
+  padding: 20px 10px;
+}
+
+/* Outer Desktop Frame */
+.desktop-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  max-width: 100%;
+}
+
+/* App Window (Matches JFrame ProgrammingExercise16_25) */
+.app-window {
+  width: 600px;
+  background-color: #eeeeee;
+  border-radius: 8px 8px 6px 6px;
+  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* Window Titlebar */
+.window-titlebar {
+  height: 32px;
+  background: linear-gradient(180deg, #ececec 0%, #dedede 50%, #d2d2d2 100%);
+  border-bottom: 1px solid #b0b0b0;
+  display: flex;
+  align-items: center;
+  padding: 0 12px;
+  user-select: none;
+}
+
+.window-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 60px;
+}
+
+.control-btn {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  display: inline-block;
+  cursor: pointer;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+}
+
+.control-btn.close {
+  background: #ff5f56;
+  border: 1px solid #e0443e;
+}
+
+.control-btn.minimize {
+  background: #ffbd2e;
+  border: 1px solid #dea123;
+}
+
+.control-btn.zoom {
+  background: #27c93f;
+  border: 1px solid #1aab29;
+}
+
+.window-title {
+  flex: 1;
+  text-align: center;
+  font-size: 13px;
+  font-weight: 500;
+  color: #333333;
+  letter-spacing: 0.2px;
+}
+
+.window-spacer {
+  width: 60px;
+}
+
+/* Screen Views */
+.screen-view {
+  display: none;
+  width: 600px;
+  flex-direction: column;
+}
+
+.screen-view.active {
+  display: flex;
+}
+
+/* Screen 1: Start Screen */
+#start-screen {
+  height: 400px;
+  background-color: #ffffff;
+}
+
+.instructions-scroll {
+  flex: 1;
+  padding: 16px 20px;
+  overflow-y: auto;
+  background-color: #ffffff;
+}
+
+.instructions-text {
+  font-family: "Times New Roman", Times, Georgia, serif;
+  font-size: 26px;
+  line-height: 1.35;
+  color: #000000;
+  word-wrap: break-word;
+}
+
+.start-bar {
+  height: 44px;
+  background-color: #eeeeee;
+  border-top: 1px solid #c0c0c0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+}
+
+/* Screen 2: Game Screen */
+#game-screen {
+  height: 480px;
+  background-color: #eeeeee;
+}
+
+.canvas-wrap {
+  width: 600px;
+  height: 400px;
+  position: relative;
+  background-color: #ffffff;
+  cursor: crosshair;
+  user-select: none;
+}
+
+#game-canvas {
+  width: 600px;
+  height: 400px;
+  display: block;
+}
+
+.control-bar {
+  width: 600px;
+  height: 80px;
+  background-color: #eeeeee;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 0 12px;
+  border-top: 1px solid #d0d0d0;
+  user-select: none;
+}
+
+/* Swing Buttons */
+.swing-btn {
+  font-family: -apple-system, BlinkMacSystemFont, "Lucida Grande", "Segoe UI", sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: #111111;
+  background: linear-gradient(180deg, #ffffff 0%, #ececec 50%, #dedede 100%);
+  border: 1px solid #b5b5b5;
+  border-radius: 4px;
+  padding: 5px 16px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
+  cursor: pointer;
+  outline: none;
+  transition: all 0.1s ease;
+  line-height: 1.2;
+}
+
+.swing-btn:hover:not(:disabled) {
+  background: linear-gradient(180deg, #ffffff 0%, #f0f0f0 50%, #e6e6e6 100%);
+  border-color: #999999;
+}
+
+.swing-btn:active:not(:disabled) {
+  background: linear-gradient(180deg, #d8d8d8 0%, #e0e0e0 50%, #ededed 100%);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.swing-btn:disabled {
+  color: #999999;
+  background: #f4f4f4;
+  border-color: #dcdcdc;
+  box-shadow: none;
+  cursor: default;
+}
+
+.start-btn {
+  width: 100%;
+  height: 36px;
+  font-size: 15px;
+}
+
+.control-btn-ui {
+  height: 34px;
+}
+
+.restart-btn {
+  background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 50%, #e8e8e8 100%);
+}
+
+/* Leaderboard Dialog Overlay */
+.dialog-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  backdrop-filter: blur(2px);
+}
+
+.dialog-overlay.active {
+  display: flex;
+}
+
+.leaderboard-dialog {
+  width: 440px;
+  max-width: 90%;
+  background-color: #f2f2f2;
+  border: 1px solid #8e8e8e;
+  border-radius: 6px;
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  overflow: hidden;
+  animation: dialogPop 0.15s ease-out;
+}
+
+@keyframes dialogPop {
+  0% { transform: scale(0.92); opacity: 0; }
+  100% { transform: scale(1); opacity: 1; }
+}
+
+.dialog-titlebar {
+  height: 28px;
+  background: linear-gradient(180deg, #e8e8e8 0%, #dcdcdc 100%);
+  border-bottom: 1px solid #bcbcbc;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 10px;
+}
+
+.dialog-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: #333333;
+}
+
+.dialog-close {
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  color: #666666;
+  cursor: pointer;
+  padding: 2px 4px;
+}
+
+.dialog-close:hover {
+  color: #000000;
+}
+
+.leaderboard-content {
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.submit-score-section {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  background: #ffffff;
+  padding: 10px;
+  border: 1px solid #c8c8c8;
+  border-radius: 4px;
+}
+
+.submit-score-section label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #444444;
+}
+
+.submit-row {
+  display: flex;
+  gap: 8px;
+}
+
+.submit-row input {
+  flex: 1;
+  padding: 6px 10px;
+  border: 1px solid #b0b0b0;
+  border-radius: 3px;
+  font-size: 13px;
+  outline: none;
+}
+
+.submit-row input:focus {
+  border-color: #3b78e7;
+}
+
+.scores-table-container {
+  background: #ffffff;
+  border: 1px solid #b8b8b8;
+  border-radius: 3px;
+  max-height: 220px;
+  overflow-y: auto;
+}
+
+.scores-header-row {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  background: #e4e4e4;
+  padding: 6px 12px;
+  font-weight: 600;
+  font-size: 12px;
+  color: #333333;
+  border-bottom: 1px solid #cccccc;
+}
+
+.scores-list {
+  display: flex;
+  flex-direction: column;
+}
+
+.score-row {
+  display: grid;
+  grid-template-columns: 1fr 100px;
+  padding: 5px 12px;
+  font-size: 13px;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.score-row:nth-child(even) {
+  background: #fafafa;
+}
+
+.dialog-actions {
+  display: flex;
+  justify-content: flex-end;
+  padding: 10px 16px;
+  background: #e8e8e8;
+  border-top: 1px solid #d0d0d0;
+}
+
+/* Footer Info */
+.desktop-footer {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: #9aa0a6;
+  font-size: 12px;
+  text-align: center;
+}
+
+.repo-badge {
+  background: rgba(255, 255, 255, 0.1);
+  padding: 3px 8px;
+  border-radius: 12px;
+  color: #e8eaed;
+  font-family: monospace;
+  font-size: 12px;
+}
+
+.footer-dot {
+  color: #5f6368;
+}
+
+.footer-text {
+  color: #bdc1c6;
+}
+
+/* Responsive Scaling */
+@media (max-width: 640px) {
+  .app-window {
+    transform: scale(calc((100vw - 20px) / 600));
+    transform-origin: top center;
+    margin-bottom: calc(512px * (calc((100vw - 20px) / 600) - 1));
+  }
+}

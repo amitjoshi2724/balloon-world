@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balloon World - ProgrammingExercise16_25</title>
+  <meta name="description" content="Faithful web port of the classic Java Swing Balloon Shooter game (ProgrammingExercise16_25).">
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="desktop-container">
+    <!-- Retro Application Window -->
+    <div class="app-window" id="app-window">
+      <!-- Title Bar -->
+      <div class="window-titlebar">
+        <div class="window-controls">
+          <span class="control-btn close"></span>
+          <span class="control-btn minimize"></span>
+          <span class="control-btn zoom"></span>
+        </div>
+        <div class="window-title" id="window-title">ProgrammingExercise16_25</div>
+        <div class="window-spacer"></div>
+      </div>
+
+      <!-- Screen 1: Start Screen (ProgrammingExercise16_25) -->
+      <div class="screen-view active" id="start-screen">
+        <div class="instructions-scroll">
+          <div class="instructions-text">
+            This game is called Balloon Shooter. Try to shoot as many balloons as you can. Move gun with left and right arrow keys. Shoot with either the up arrow key or the space bar(Hint: Try not to shoot too many balloons at once or the game will lag at the later stages of the game). If you miss three balloons the game is over. Press p to pause and play.
+          </div>
+        </div>
+        <div class="start-bar">
+          <button type="button" class="swing-btn start-btn" id="start-btn">Start</button>
+        </div>
+      </div>
+
+      <!-- Screen 2: Game Screen (ProgrammingExercise16_25Panel) -->
+      <div class="screen-view" id="game-screen">
+        <div class="canvas-wrap">
+          <canvas id="game-canvas" width="600" height="400"></canvas>
+        </div>
+        <div class="control-bar">
+          <button type="button" class="swing-btn control-btn-ui" id="leaderboard-btn" disabled>Leaderboard/Submit Score</button>
+          <button type="button" class="swing-btn control-btn-ui" id="pause-btn">Pause</button>
+          <button type="button" class="swing-btn control-btn-ui" id="play-btn" disabled>Play</button>
+          <button type="button" class="swing-btn control-btn-ui restart-btn" id="restart-btn">Restart</button>
+        </div>
+      </div>
+
+      <!-- Screen 3: Leaderboard Modal / Dialog (Leaderboard.java) -->
+      <div class="dialog-overlay" id="leaderboard-overlay">
+        <div class="swing-dialog leaderboard-dialog" role="dialog" aria-labelledby="leaderboard-title">
+          <div class="dialog-titlebar">
+            <span class="dialog-title" id="leaderboard-title">Leaderboard</span>
+            <button type="button" class="dialog-close" id="leaderboard-close" aria-label="Close">✕</button>
+          </div>
+          <div class="leaderboard-content">
+            <!-- Submit current score section (visible on Game Over) -->
+            <div class="submit-score-section" id="submit-section">
+              <label for="player-name-input">Enter name:</label>
+              <div class="submit-row">
+                <input type="text" id="player-name-input" maxlength="15" placeholder="Your Name" autocomplete="off">
+                <button type="button" class="swing-btn submit-btn" id="submit-score-btn">Submit</button>
+              </div>
+            </div>
+
+            <!-- Scores Table (GridLayout 11x2 matching Java Leaderboard) -->
+            <div class="scores-table-container">
+              <div class="scores-header-row">
+                <span class="col-header">Name</span>
+                <span class="col-header">Score</span>
+              </div>
+              <div class="scores-list" id="scores-list">
+                <!-- Populated dynamically via JS -->
+              </div>
+            </div>
+          </div>
+          <div class="dialog-actions">
+            <button type="button" class="swing-btn dialog-ok-btn" id="leaderboard-ok-btn">OK</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Desktop Footer Info -->
+    <div class="desktop-footer">
+      <span class="repo-badge">balloon-world</span>
+      <span class="footer-dot">•</span>
+      <span class="footer-text">Ported from 2015 Java Swing (`ProgrammingExercise16_25.java`)</span>
+      <span class="footer-dot">•</span>
+      <span class="footer-text">Keys: ← → to aim • ↑ or Space or Click to shoot • P to pause</span>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
