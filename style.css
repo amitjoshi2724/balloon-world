@@ -1,4 +1,8 @@
-/* Reset & Base Styles */
+/* ==========================================================================
+   Balloon World - Complete CSS Stylesheet
+   Modern Arcade Styling with Classic Java Swing Recreation
+   ========================================================================== */
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,55 +10,66 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Lucida Grande", "Segoe UI", Roboto, sans-serif;
-  background: radial-gradient(circle at 50% 25%, #2a313d 0%, #151921 100%);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  background-color: #121820;
+  background-image: 
+    radial-gradient(circle at 50% 20%, rgba(37, 99, 235, 0.12) 0%, transparent 60%),
+    radial-gradient(circle at 80% 80%, rgba(16, 185, 129, 0.08) 0%, transparent 50%),
+    radial-gradient(#1e293b 1px, transparent 1px);
+  background-size: 100% 100%, 100% 100%, 24px 24px;
   min-height: 100vh;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #000000;
+  color: #1f2937;
   overflow-x: hidden;
   padding: 20px 10px;
 }
 
-/* Outer Desktop Frame */
 .desktop-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
   gap: 16px;
-  max-width: 100%;
+  width: 100%;
+  max-width: 720px;
 }
 
-/* App Window (Matches JFrame ProgrammingExercise16_25) */
+/* ==========================================================================
+   Retro macOS Window Frame
+   ========================================================================== */
 .app-window {
   width: 600px;
-  background-color: #eeeeee;
-  border-radius: 8px 8px 6px 6px;
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.1);
+  height: 512px; /* 32px titlebar + 480px content area */
+  background: #ffffff;
+  border-radius: 10px;
+  box-shadow: 
+    0 22px 50px -10px rgba(0, 0, 0, 0.65),
+    0 0 0 1px rgba(255, 255, 255, 0.15),
+    0 8px 16px rgba(0, 0, 0, 0.3);
   overflow: hidden;
   display: flex;
   flex-direction: column;
   position: relative;
+  border: 1px solid #2d3748;
 }
 
 /* Window Titlebar */
 .window-titlebar {
   height: 32px;
-  background: linear-gradient(180deg, #ececec 0%, #dedede 50%, #d2d2d2 100%);
-  border-bottom: 1px solid #b0b0b0;
+  background: linear-gradient(180deg, #e3e5e8 0%, #cbced4 100%);
+  border-bottom: 1px solid #aeb2b8;
   display: flex;
   align-items: center;
   padding: 0 12px;
   user-select: none;
+  z-index: 10;
 }
 
 .window-controls {
   display: flex;
-  align-items: center;
   gap: 8px;
-  width: 60px;
+  width: 70px;
 }
 
 .control-btn {
@@ -62,22 +77,19 @@ body {
   height: 12px;
   border-radius: 50%;
   display: inline-block;
-  cursor: pointer;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.4);
+  box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.2);
 }
 
 .control-btn.close {
-  background: #ff5f56;
+  background-color: #ff5f56;
   border: 1px solid #e0443e;
 }
-
 .control-btn.minimize {
-  background: #ffbd2e;
+  background-color: #ffbd2e;
   border: 1px solid #dea123;
 }
-
 .control-btn.zoom {
-  background: #27c93f;
+  background-color: #27c93f;
   border: 1px solid #1aab29;
 }
 
@@ -85,58 +97,402 @@ body {
   flex: 1;
   text-align: center;
   font-size: 13px;
-  font-weight: 500;
-  color: #333333;
+  font-weight: 600;
+  color: #374151;
   letter-spacing: 0.2px;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
 }
 
 .window-spacer {
-  width: 60px;
+  width: 70px;
 }
 
-/* Screen Views */
+/* ==========================================================================
+   Screen Switching
+   ========================================================================== */
 .screen-view {
   display: none;
   width: 600px;
-  flex-direction: column;
+  height: 480px;
+  position: relative;
 }
 
 .screen-view.active {
-  display: flex;
+  display: block;
 }
 
-/* Screen 1: Start Screen */
+/* ==========================================================================
+   Screen 1: Balloon World Main Menu
+   ========================================================================== */
 #start-screen {
-  height: 400px;
-  background-color: #ffffff;
+  background: linear-gradient(180deg, #d4ecfd 0%, #edf6fd 55%, #ffffff 100%);
+  overflow: hidden;
+  position: relative;
 }
 
-.instructions-scroll {
-  flex: 1;
-  padding: 16px 20px;
-  overflow-y: auto;
-  background-color: #ffffff;
+.main-menu-wrap {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px 18px 24px;
+  position: relative;
+  z-index: 2;
 }
 
-.instructions-text {
-  font-family: "Times New Roman", Times, Georgia, serif;
-  font-size: 26px;
-  line-height: 1.35;
-  color: #000000;
-  word-wrap: break-word;
+/* Drifting Clouds */
+.menu-sky {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  overflow: hidden;
+  z-index: 1;
 }
 
-.start-bar {
+.cloud {
+  position: absolute;
+  background: rgba(255, 255, 255, 0.75);
+  border-radius: 50px;
+  box-shadow: 0 4px 12px rgba(180, 210, 240, 0.4);
+}
+
+.cloud::before, .cloud::after {
+  content: '';
+  position: absolute;
+  background: inherit;
+  border-radius: 50%;
+}
+
+.cloud.c1 {
+  width: 110px;
+  height: 36px;
+  top: 14%;
+  left: -20px;
+  animation: cloudDrift 28s linear infinite;
+}
+.cloud.c1::before {
+  width: 44px;
   height: 44px;
-  background-color: #eeeeee;
-  border-top: 1px solid #c0c0c0;
+  top: -18px;
+  left: 20px;
+}
+.cloud.c1::after {
+  width: 50px;
+  height: 50px;
+  top: -24px;
+  left: 48px;
+}
+
+.cloud.c2 {
+  width: 140px;
+  height: 42px;
+  top: 45%;
+  right: -50px;
+  opacity: 0.65;
+  animation: cloudDriftReverse 35s linear infinite;
+}
+.cloud.c2::before {
+  width: 52px;
+  height: 52px;
+  top: -24px;
+  left: 26px;
+}
+.cloud.c2::after {
+  width: 60px;
+  height: 60px;
+  top: -30px;
+  left: 56px;
+}
+
+.cloud.c3 {
+  width: 90px;
+  height: 30px;
+  top: 72%;
+  left: 30px;
+  opacity: 0.5;
+  animation: cloudDrift 22s linear infinite 5s;
+}
+.cloud.c3::before {
+  width: 36px;
+  height: 36px;
+  top: -14px;
+  left: 18px;
+}
+
+@keyframes cloudDrift {
+  0% { transform: translateX(-120px); }
+  100% { transform: translateX(650px); }
+}
+
+@keyframes cloudDriftReverse {
+  0% { transform: translateX(120px); }
+  100% { transform: translateX(-650px); }
+}
+
+/* Floating Balloons */
+.menu-decorations {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.float-balloon {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  animation: balloonBob 4.5s ease-in-out infinite alternate;
+}
+
+.balloon-graphic {
+  width: 38px;
+  height: 46px;
+  border-radius: 50% 50% 50% 50% / 40% 40% 60% 60%;
+  position: relative;
+  box-shadow: inset -4px -4px 8px rgba(0, 0, 0, 0.18), inset 4px 4px 8px rgba(255, 255, 255, 0.4), 0 6px 14px rgba(0, 0, 0, 0.12);
+}
+
+.balloon-graphic::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 6px;
+  height: 4px;
+  background: inherit;
+  clip-path: polygon(0 100%, 50% 0, 100% 100%);
+}
+
+.balloon-string {
+  width: 1px;
+  height: 42px;
+  background: linear-gradient(180deg, #666 0%, rgba(100, 100, 100, 0.2) 100%);
+  margin-top: 2px;
+  transform-origin: top center;
+  animation: stringSway 3s ease-in-out infinite alternate;
+}
+
+.red-bg { background: radial-gradient(circle at 35% 30%, #ff6b6b 0%, #ee2727 60%, #c41111 100%); }
+.blue-bg { background: radial-gradient(circle at 35% 30%, #60a5fa 0%, #2563eb 60%, #1d4ed8 100%); }
+.gold-bg { background: radial-gradient(circle at 35% 30%, #fde047 0%, #eab308 60%, #ca8a04 100%); }
+.green-bg { background: radial-gradient(circle at 35% 30%, #4ade80 0%, #16a34a 60%, #15803d 100%); }
+.purple-bg { background: radial-gradient(circle at 35% 30%, #c084fc 0%, #9333ea 60%, #7e22ce 100%); }
+
+.b-red { top: 12%; left: 6%; animation-duration: 4.8s; }
+.b-blue { top: 22%; right: 7%; animation-duration: 5.6s; animation-delay: 0.8s; }
+.b-gold { bottom: 18%; left: 8%; animation-duration: 5.1s; animation-delay: 1.6s; }
+.b-green { bottom: 24%; right: 9%; animation-duration: 4.2s; animation-delay: 1.2s; }
+.b-purple { top: 48%; left: 2%; opacity: 0.75; transform: scale(0.85); animation-duration: 6s; animation-delay: 2.2s; }
+
+@keyframes balloonBob {
+  0% { transform: translateY(0) rotate(-3deg); }
+  100% { transform: translateY(-28px) rotate(4deg); }
+}
+
+@keyframes stringSway {
+  0% { transform: rotate(-5deg); }
+  100% { transform: rotate(5deg); }
+}
+
+/* Hero Branding */
+.menu-hero {
+  text-align: center;
+  z-index: 2;
+  margin-top: 2px;
+}
+
+.arcade-pill {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: #dc2626;
+  background: rgba(254, 226, 226, 0.85);
+  border: 1px solid rgba(239, 68, 68, 0.35);
+  border-radius: 20px;
+  padding: 4px 14px;
+  display: inline-block;
+  margin-bottom: 6px;
+  box-shadow: 0 2px 6px rgba(220, 38, 38, 0.12);
+}
+
+.game-logo {
+  font-family: 'Fredoka', 'Inter', cursive, sans-serif;
+  font-size: 40px;
+  font-weight: 700;
+  color: #0f172a;
+  letter-spacing: -0.5px;
+  text-shadow: 
+    0 1px 0 #ffffff,
+    0 3px 6px rgba(15, 23, 42, 0.12);
+  line-height: 1.1;
+  margin-bottom: 4px;
+}
+
+.game-tagline {
+  font-size: 13px;
+  font-weight: 600;
+  color: #475569;
+  letter-spacing: 0.3px;
+}
+
+/* Instructions Card */
+.menu-card {
+  width: 100%;
+  background: rgba(255, 255, 255, 0.92);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.8);
+  border-radius: 12px;
+  padding: 16px 20px;
+  box-shadow: 
+    0 10px 25px -5px rgba(30, 58, 138, 0.08),
+    0 4px 8px -2px rgba(0, 0, 0, 0.04);
+  z-index: 2;
+}
+
+.mission-text {
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: #334155;
+  text-align: center;
+  margin-bottom: 12px;
+}
+
+.mission-text strong {
+  color: #0f172a;
+  font-weight: 700;
+}
+
+.controls-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+}
+
+.control-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+  padding: 7px 12px;
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 4px;
+  justify-content: space-between;
+  font-size: 12px;
+  transition: background 0.15s ease;
 }
 
-/* Screen 2: Game Screen */
+.control-item:hover {
+  background: #f1f5f9;
+}
+
+.control-keys {
+  font-weight: 600;
+  color: #2563eb;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.control-desc {
+  color: #475569;
+  font-weight: 500;
+}
+
+kbd {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-bottom: 2px solid #94a3b8;
+  border-radius: 4px;
+  padding: 2px 7px;
+  font-family: 'Inter', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  color: #1e293b;
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+}
+
+/* Menu Actions */
+.menu-actions {
+  display: flex;
+  gap: 14px;
+  width: 100%;
+  justify-content: center;
+  z-index: 2;
+  margin-bottom: 2px;
+}
+
+.menu-btn {
+  padding: 10px 24px;
+  font-size: 14.5px;
+  font-weight: 600;
+  border-radius: 8px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  letter-spacing: 0.2px;
+}
+
+.play-hero-btn {
+  background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+  color: #ffffff;
+  border: 1px solid #047857;
+  box-shadow: 
+    0 4px 14px rgba(16, 185, 129, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+  font-size: 15px;
+  padding: 11px 30px;
+  font-weight: 700;
+}
+
+.play-hero-btn:hover {
+  background: linear-gradient(180deg, #34d399 0%, #10b981 100%);
+  border-color: #065f46;
+  color: #ffffff;
+  transform: translateY(-2px);
+  box-shadow: 
+    0 6px 18px rgba(16, 185, 129, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.3);
+}
+
+.play-hero-btn:active {
+  transform: translateY(0);
+  background: linear-gradient(180deg, #059669 0%, #047857 100%);
+  box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.leaderboard-hero-btn {
+  background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
+  color: #1e293b;
+  border: 1px solid #cbd5e1;
+  box-shadow: 
+    0 2px 6px rgba(0, 0, 0, 0.06),
+    inset 0 1px 0 #ffffff;
+  font-weight: 600;
+}
+
+.leaderboard-hero-btn:hover {
+  background: linear-gradient(180deg, #ffffff 0%, #e2e8f0 100%);
+  border-color: #94a3b8;
+  transform: translateY(-1px);
+}
+
+.btn-icon {
+  font-size: 14px;
+}
+
+/* ==========================================================================
+   Screen 2: Game Screen (Faithful Recreation)
+   ========================================================================== */
 #game-screen {
   height: 480px;
   background-color: #eeeeee;
@@ -164,22 +520,22 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
   padding: 0 12px;
   border-top: 1px solid #d0d0d0;
   user-select: none;
 }
 
-/* Swing Buttons */
+/* Swing Buttons (Faithful 2015 Java Swing UI) */
 .swing-btn {
-  font-family: -apple-system, BlinkMacSystemFont, "Lucida Grande", "Segoe UI", sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Lucida Grande', 'Segoe UI', sans-serif;
   font-size: 13px;
   font-weight: 500;
   color: #111111;
   background: linear-gradient(180deg, #ffffff 0%, #ececec 50%, #dedede 100%);
   border: 1px solid #b5b5b5;
   border-radius: 4px;
-  padding: 5px 16px;
+  padding: 6px 14px;
   box-shadow: 0 1px 2px rgba(0, 0, 0, 0.08), inset 0 1px 0 rgba(255, 255, 255, 0.8);
   cursor: pointer;
   outline: none;
@@ -205,28 +561,25 @@ body {
   cursor: default;
 }
 
-.start-btn {
-  width: 100%;
-  height: 36px;
-  font-size: 15px;
-}
-
 .control-btn-ui {
   height: 34px;
 }
 
-.restart-btn {
-  background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 50%, #e8e8e8 100%);
+.menu-back-btn {
+  background: linear-gradient(180deg, #ffffff 0%, #f7f7f7 50%, #eaeaea 100%);
+  font-weight: 600;
 }
 
-/* Leaderboard Dialog Overlay */
+/* ==========================================================================
+   Screen 3: Leaderboard Modal
+   ========================================================================== */
 .dialog-overlay {
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.4);
+  background: rgba(0, 0, 0, 0.45);
   display: none;
   align-items: center;
   justify-content: center;
@@ -243,10 +596,10 @@ body {
   max-width: 90%;
   background-color: #f2f2f2;
   border: 1px solid #8e8e8e;
-  border-radius: 6px;
-  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.45);
+  border-radius: 8px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.4);
   overflow: hidden;
-  animation: dialogPop 0.15s ease-out;
+  animation: dialogPop 0.18s ease-out;
 }
 
 @keyframes dialogPop {
@@ -255,13 +608,13 @@ body {
 }
 
 .dialog-titlebar {
-  height: 28px;
+  height: 30px;
   background: linear-gradient(180deg, #e8e8e8 0%, #dcdcdc 100%);
   border-bottom: 1px solid #bcbcbc;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 10px;
+  padding: 0 12px;
 }
 
 .dialog-title {
@@ -295,15 +648,15 @@ body {
   flex-direction: column;
   gap: 6px;
   background: #ffffff;
-  padding: 10px;
+  padding: 12px;
   border: 1px solid #c8c8c8;
-  border-radius: 4px;
+  border-radius: 6px;
 }
 
 .submit-score-section label {
-  font-size: 12px;
+  font-size: 12.5px;
   font-weight: 600;
-  color: #444444;
+  color: #334155;
 }
 
 .submit-row {
@@ -313,34 +666,36 @@ body {
 
 .submit-row input {
   flex: 1;
-  padding: 6px 10px;
-  border: 1px solid #b0b0b0;
-  border-radius: 3px;
+  padding: 7px 12px;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
   font-size: 13px;
   outline: none;
+  transition: border-color 0.15s ease;
 }
 
 .submit-row input:focus {
-  border-color: #3b78e7;
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.2);
 }
 
 .scores-table-container {
   background: #ffffff;
-  border: 1px solid #b8b8b8;
-  border-radius: 3px;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
   max-height: 220px;
   overflow-y: auto;
 }
 
 .scores-header-row {
   display: grid;
-  grid-template-columns: 1fr 100px;
-  background: #e4e4e4;
-  padding: 6px 12px;
+  grid-template-columns: 1fr 120px;
+  background: #f1f5f9;
+  padding: 8px 14px;
   font-weight: 600;
   font-size: 12px;
-  color: #333333;
-  border-bottom: 1px solid #cccccc;
+  color: #475569;
+  border-bottom: 1px solid #e2e8f0;
 }
 
 .scores-list {
@@ -350,14 +705,32 @@ body {
 
 .score-row {
   display: grid;
-  grid-template-columns: 1fr 100px;
-  padding: 5px 12px;
+  grid-template-columns: 1fr 120px;
+  padding: 7px 14px;
   font-size: 13px;
-  border-bottom: 1px solid #f0f0f0;
+  border-bottom: 1px solid #f1f5f9;
+  align-items: center;
 }
 
 .score-row:nth-child(even) {
-  background: #fafafa;
+  background: #f8fafc;
+}
+
+.player-name {
+  font-weight: 500;
+  color: #1e293b;
+}
+
+.player-score {
+  font-weight: 700;
+  color: #059669;
+  text-align: right;
+  font-family: monospace;
+  font-size: 14px;
+}
+
+.text-right {
+  text-align: right;
 }
 
 .dialog-actions {
@@ -368,36 +741,41 @@ body {
   border-top: 1px solid #d0d0d0;
 }
 
-/* Footer Info */
+/* ==========================================================================
+   Desktop Page Footer Info
+   ========================================================================== */
 .desktop-footer {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
   justify-content: center;
   gap: 8px;
-  color: #9aa0a6;
+  color: #94a3b8;
   font-size: 12px;
   text-align: center;
 }
 
 .repo-badge {
-  background: rgba(255, 255, 255, 0.1);
-  padding: 3px 8px;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 3px 10px;
   border-radius: 12px;
-  color: #e8eaed;
+  color: #e2e8f0;
   font-family: monospace;
   font-size: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .footer-dot {
-  color: #5f6368;
+  color: #64748b;
 }
 
 .footer-text {
-  color: #bdc1c6;
+  color: #cbd5e1;
 }
 
-/* Responsive Scaling */
+/* ==========================================================================
+   Responsive Scaling
+   ========================================================================== */
 @media (max-width: 640px) {
   .app-window {
     transform: scale(calc((100vw - 20px) / 600));

@@ -3,9 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Balloon World - ProgrammingExercise16_25</title>
-  <meta name="description" content="Faithful web port of the classic Java Swing Balloon Shooter game (ProgrammingExercise16_25).">
+  <title>Balloon World</title>
+  <meta name="description" content="Balloon World - Classic retro balloon popping arcade game ported to HTML5, CSS3, and JavaScript.">
   <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="desktop-container">
@@ -14,61 +17,128 @@
       <!-- Title Bar -->
       <div class="window-titlebar">
         <div class="window-controls">
-          <span class="control-btn close"></span>
-          <span class="control-btn minimize"></span>
-          <span class="control-btn zoom"></span>
+          <span class="control-btn close" title="Close"></span>
+          <span class="control-btn minimize" title="Minimize"></span>
+          <span class="control-btn zoom" title="Zoom"></span>
         </div>
-        <div class="window-title" id="window-title">ProgrammingExercise16_25</div>
+        <div class="window-title" id="window-title">Balloon World</div>
         <div class="window-spacer"></div>
       </div>
 
-      <!-- Screen 1: Start Screen (ProgrammingExercise16_25) -->
+      <!-- Screen 1: Beautiful Main Menu (Balloon World) -->
       <div class="screen-view active" id="start-screen">
-        <div class="instructions-scroll">
-          <div class="instructions-text">
-            This game is called Balloon Shooter. Try to shoot as many balloons as you can. Move gun with left and right arrow keys. Shoot with either the up arrow key or the space bar(Hint: Try not to shoot too many balloons at once or the game will lag at the later stages of the game). If you miss three balloons the game is over. Press p to pause and play.
+        <div class="main-menu-wrap">
+          <!-- Sky Background Drifting Clouds -->
+          <div class="menu-sky">
+            <div class="cloud c1"></div>
+            <div class="cloud c2"></div>
+            <div class="cloud c3"></div>
           </div>
-        </div>
-        <div class="start-bar">
-          <button type="button" class="swing-btn start-btn" id="start-btn">Start</button>
+
+          <!-- Floating animated balloon decorations -->
+          <div class="menu-decorations" aria-hidden="true">
+            <div class="float-balloon b-red">
+              <div class="balloon-graphic red-bg"></div>
+              <div class="balloon-string"></div>
+            </div>
+            <div class="float-balloon b-blue">
+              <div class="balloon-graphic blue-bg"></div>
+              <div class="balloon-string"></div>
+            </div>
+            <div class="float-balloon b-gold">
+              <div class="balloon-graphic gold-bg"></div>
+              <div class="balloon-string"></div>
+            </div>
+            <div class="float-balloon b-green">
+              <div class="balloon-graphic green-bg"></div>
+              <div class="balloon-string"></div>
+            </div>
+            <div class="float-balloon b-purple">
+              <div class="balloon-graphic purple-bg"></div>
+              <div class="balloon-string"></div>
+            </div>
+          </div>
+
+          <!-- Header / Hero Branding -->
+          <div class="menu-hero">
+            <div class="arcade-pill">🎈 ARCADE CLASSIC 🎈</div>
+            <h1 class="game-logo">Balloon World</h1>
+            <p class="game-tagline">Pop balloons • Don&#39;t let them escape!</p>
+          </div>
+
+          <!-- Instructions Card -->
+          <div class="menu-card">
+            <p class="mission-text">
+              Welcome to <strong>Balloon World</strong>! Aim your cannon and pop as many floating balloons as you can. If you miss <strong>3 balloons</strong>, the game is over!
+            </p>
+            <div class="controls-grid">
+              <div class="control-item">
+                <span class="control-keys"><kbd>←</kbd> <kbd>→</kbd></span>
+                <span class="control-desc">Aim Cannon</span>
+              </div>
+              <div class="control-item">
+                <span class="control-keys">🖱️ Mouse</span>
+                <span class="control-desc">Aim Crosshair</span>
+              </div>
+              <div class="control-item">
+                <span class="control-keys"><kbd>Space</kbd> / <kbd>↑</kbd> / Click</span>
+                <span class="control-desc">Fire Dart</span>
+              </div>
+              <div class="control-item">
+                <span class="control-keys"><kbd>P</kbd></span>
+                <span class="control-desc">Pause / Resume</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Menu Actions -->
+          <div class="menu-actions">
+            <button type="button" class="swing-btn menu-btn play-hero-btn" id="start-btn">
+              <span class="btn-icon">▶</span> Play Balloon World
+            </button>
+            <button type="button" class="swing-btn menu-btn leaderboard-hero-btn" id="menu-leaderboard-btn">
+              <span class="btn-icon">🏆</span> High Scores
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Screen 2: Game Screen (ProgrammingExercise16_25Panel) -->
+      <!-- Screen 2: Game Screen -->
       <div class="screen-view" id="game-screen">
         <div class="canvas-wrap">
           <canvas id="game-canvas" width="600" height="400"></canvas>
         </div>
         <div class="control-bar">
-          <button type="button" class="swing-btn control-btn-ui" id="leaderboard-btn" disabled>Leaderboard/Submit Score</button>
+          <button type="button" class="swing-btn control-btn-ui" id="leaderboard-btn" disabled>Leaderboard</button>
           <button type="button" class="swing-btn control-btn-ui" id="pause-btn">Pause</button>
           <button type="button" class="swing-btn control-btn-ui" id="play-btn" disabled>Play</button>
-          <button type="button" class="swing-btn control-btn-ui restart-btn" id="restart-btn">Restart</button>
+          <button type="button" class="swing-btn control-btn-ui" id="restart-btn">Restart</button>
+          <button type="button" class="swing-btn control-btn-ui menu-back-btn" id="return-menu-btn">Main Menu</button>
         </div>
       </div>
 
-      <!-- Screen 3: Leaderboard Modal / Dialog (Leaderboard.java) -->
+      <!-- Screen 3: Leaderboard Modal / Dialog -->
       <div class="dialog-overlay" id="leaderboard-overlay">
         <div class="swing-dialog leaderboard-dialog" role="dialog" aria-labelledby="leaderboard-title">
           <div class="dialog-titlebar">
-            <span class="dialog-title" id="leaderboard-title">Leaderboard</span>
+            <span class="dialog-title" id="leaderboard-title">Balloon World • Leaderboard</span>
             <button type="button" class="dialog-close" id="leaderboard-close" aria-label="Close">✕</button>
           </div>
           <div class="leaderboard-content">
             <!-- Submit current score section (visible on Game Over) -->
             <div class="submit-score-section" id="submit-section">
-              <label for="player-name-input">Enter name:</label>
+              <label for="player-name-input">New High Score! Enter your name:</label>
               <div class="submit-row">
-                <input type="text" id="player-name-input" maxlength="15" placeholder="Your Name" autocomplete="off">
-                <button type="button" class="swing-btn submit-btn" id="submit-score-btn">Submit</button>
+                <input type="text" id="player-name-input" maxlength="15" placeholder="Player Name" autocomplete="off">
+                <button type="button" class="swing-btn submit-btn" id="submit-score-btn">Save</button>
               </div>
             </div>
 
-            <!-- Scores Table (GridLayout 11x2 matching Java Leaderboard) -->
+            <!-- Scores Table -->
             <div class="scores-table-container">
               <div class="scores-header-row">
-                <span class="col-header">Name</span>
-                <span class="col-header">Score</span>
+                <span class="col-header">Player</span>
+                <span class="col-header text-right">Balloons Popped</span>
               </div>
               <div class="scores-list" id="scores-list">
                 <!-- Populated dynamically via JS -->
@@ -76,7 +146,7 @@
             </div>
           </div>
           <div class="dialog-actions">
-            <button type="button" class="swing-btn dialog-ok-btn" id="leaderboard-ok-btn">OK</button>
+            <button type="button" class="swing-btn dialog-ok-btn" id="leaderboard-ok-btn">Close</button>
           </div>
         </div>
       </div>
@@ -86,9 +156,9 @@
     <div class="desktop-footer">
       <span class="repo-badge">balloon-world</span>
       <span class="footer-dot">•</span>
-      <span class="footer-text">Ported from 2015 Java Swing (`ProgrammingExercise16_25.java`)</span>
+      <span class="footer-text">Balloon World Classic Arcade Port</span>
       <span class="footer-dot">•</span>
-      <span class="footer-text">Keys: ← → to aim • ↑ or Space or Click to shoot • P to pause</span>
+      <span class="footer-text">Keys: ← → to aim • ↑ or Space or Click to fire • P to pause</span>
     </div>
   </div>
 

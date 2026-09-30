@@ -1,6 +1,6 @@
 /**
- * Balloon Shooter / Balloon World
- * Faithful HTML5/JavaScript port of ProgrammingExercise16_25.java
+ * Balloon World
+ * Faithful HTML5/JavaScript port of the classic Java Swing arcade game
  */
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -8,6 +8,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const startScreen = document.getElementById("start-screen");
   const gameScreen = document.getElementById("game-screen");
   const startBtn = document.getElementById("start-btn");
+  const menuLeaderboardBtn = document.getElementById("menu-leaderboard-btn");
+  const returnMenuBtn = document.getElementById("return-menu-btn");
+
   const canvas = document.getElementById("game-canvas");
   const ctx = canvas.getContext("2d");
 
@@ -142,13 +145,13 @@ document.addEventListener("DOMContentLoaded", () => {
     mouseY = Math.max(0, Math.min(CANVAS_HEIGHT, y));
 
     const dx = mouseX - CENTER_X;
-    // Force dy to be strictly negative so the gun barrel always points UP into the playfield
+    // Force dy to be strictly negative so the gun barrel always points UP into the playfield (non-negative sine)
     const dy = Math.min(-1, mouseY - GUN_BASE_Y);
 
     const rad = Math.atan2(dy, dx);
     const deg = rad * (180.0 / Math.PI) + 360.0;
 
-    // Clamp strictly between 185 deg and 355 deg (cannot point downward or below canvas)
+    // Clamp strictly between 185 deg and 355 deg (cannot point downward or below horizon)
     gunAngle = Math.max(185.0, Math.min(355.0, deg));
   }
 
@@ -226,32 +229,31 @@ document.addEventListener("DOMContentLoaded", () => {
         continue;
       }
 
-      // Check collision with all active balloons
-      for (let j = 0; j < balloons.length; j++) {
-        checkCollision(b, balloons[j]);
-      }
-
       b.x += b.dx;
       b.y += b.dy;
 
-      // Despawn bullet at boundaries
-      if (b.x >= CANVAS_WIDTH + 10 || b.x <= -15 || b.y <= -15) {
+      // Check bullet collisions with active balloons
+      for (const bal of balloons) {
+        if (checkCollision(b, bal)) {
+          b.active = false;
+          break;
+        }
+      }
+
+      // Check canvas boundary (bullet leaves screen)
+      if (b.x < 0 || b.x > CANVAS_WIDTH || b.y < 0 || b.y > CANVAS_HEIGHT) {
         b.active = false;
+        bullets.splice(i, 1);
       }
     }
 
     // Update Balloons
     for (let i = balloons.length - 1; i >= 0; i--) {
       const bal = balloons[i];
-      if (bal.popped) {
-        balloons.splice(i, 1);
-        continue;
-      }
-
       bal.y += bal.dy;
 
-      // Off top of screen: counted as a miss!
-      if (bal.y < -(bal.radius * 2 * 3) - 10) {
+      // Check if balloon escaped off the top of screen
+      if (bal.y + bal.radius * 2 < 0) {
         if (!bal.popped) {
           misses++;
           if (misses >= MAX_MISSES) {
@@ -263,7 +265,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Render Frame matching Java ProgrammingExercise16_25Panel
+  // Render Frame matching classic arcade canvas
   function render() {
     // Clear canvas with white
     ctx.fillStyle = "#ffffff";
@@ -299,7 +301,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.fill();
     }
 
-    // Draw Gun
+    // Draw Gun Cannon
     const tip = getGunTip();
     ctx.beginPath();
     ctx.lineWidth = GUN_STROKE;
@@ -310,7 +312,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.stroke();
 
     // Draw Mouse Crosshair (Aimer)
-    if (mouseActive && !isGameOver && !paused) {
+    if (mouseActive && !isGameOver && !paused && active) {
       const RADIUS = 7;
       ctx.beginPath();
       ctx.fillStyle = "#ff0000";
@@ -327,7 +329,7 @@ document.addEventListener("DOMContentLoaded", () => {
       ctx.stroke();
     }
 
-    // Draw HUD Scoreboard (Matching Java font SansSerif 18px)
+    // Draw HUD Scoreboard (Matching classic SansSerif font)
     ctx.fillStyle = "#ffffff";
     ctx.fillRect(260, 0, 100, 52);
 
@@ -406,7 +408,18 @@ document.addEventListener("DOMContentLoaded", () => {
     playGameOverSound();
   }
 
-  // Leaderboard Persistence (localStorage)
+  function returnToMainMenu() {
+    active = false;
+    paused = false;
+    isGameOver = false;
+    if (balloonTimer) clearInterval(balloonTimer);
+    bullets = [];
+    balloons = [];
+    gameScreen.classList.remove("active");
+    startScreen.classList.add("active");
+  }
+
+  // Leaderboard Persistence (localStorage) - No Dummy Data
   const STORAGE_KEY = "balloon_world_highscores";
 
   function getHighScores() {
@@ -423,15 +436,15 @@ document.addEventListener("DOMContentLoaded", () => {
     } catch (e) {}
   }
 
-  function renderLeaderboard() {
+  function openLeaderboard(showSubmit = false) {
     const scores = getHighScores();
     scores.sort((a, b) => b.score - a.score);
 
     scoresList.innerHTML = "";
     if (scores.length === 0) {
       scoresList.innerHTML = `
-        <div style="padding: 18px; text-align: center; color: #777; font-size: 13px;">
-          No scores yet. Play a game and submit your score!
+        <div style="padding: 24px; text-align: center; color: #64748b; font-size: 13.5px;">
+          No high scores recorded yet.<br>Play Balloon World and claim the #1 spot!
         </div>
       `;
     } else {
@@ -446,13 +459,15 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     }
 
-    if (isGameOver) {
+    if (showSubmit) {
       submitSection.style.display = "flex";
       playerNameInput.value = "";
       playerNameInput.focus();
     } else {
       submitSection.style.display = "none";
     }
+
+    leaderboardOverlay.classList.add("active");
   }
 
   function escapeHtml(str) {
@@ -473,13 +488,20 @@ document.addEventListener("DOMContentLoaded", () => {
     getAudioContext();
   });
 
+  menuLeaderboardBtn.addEventListener("click", () => {
+    openLeaderboard(false);
+  });
+
+  returnMenuBtn.addEventListener("click", () => {
+    returnToMainMenu();
+  });
+
   pauseBtn.addEventListener("click", pauseGame);
   playBtn.addEventListener("click", resumeGame);
   restartBtn.addEventListener("click", startGame);
 
   leaderboardBtn.addEventListener("click", () => {
-    renderLeaderboard();
-    leaderboardOverlay.classList.add("active");
+    openLeaderboard(isGameOver);
   });
 
   leaderboardClose.addEventListener("click", () => {
@@ -491,13 +513,13 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   submitScoreBtn.addEventListener("click", () => {
-    const name = playerNameInput.value.trim() || "Anonymous";
+    const name = playerNameInput.value.trim() || "Player";
     const scores = getHighScores();
     scores.push({ name, score: count });
     scores.sort((a, b) => b.score - a.score);
     saveHighScores(scores);
     submitSection.style.display = "none";
-    renderLeaderboard();
+    openLeaderboard(false);
   });
 
   playerNameInput.addEventListener("keydown", (e) => {
@@ -543,7 +565,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Check query param to auto-start for verification
+  // Check query param to auto-start for testing/debugging
   if (new URLSearchParams(window.location.search).get("screen") === "game") {
     startScreen.classList.remove("active");
     gameScreen.classList.add("active");
