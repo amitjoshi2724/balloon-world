@@ -129,17 +129,21 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
+  // Disallow cannon movement during pause, game over, or inactive state
   function turnLeft() {
+    if (!active || paused || isGameOver) return;
     gunAngle = Math.max(185.0, gunAngle - 5.0);
     mouseActive = false;
   }
 
   function turnRight() {
+    if (!active || paused || isGameOver) return;
     gunAngle = Math.min(355.0, gunAngle + 5.0);
     mouseActive = false;
   }
 
   function aimAt(x, y) {
+    if (!active || paused || isGameOver) return;
     mouseActive = true;
     mouseX = Math.max(0, Math.min(CANVAS_WIDTH, x));
     mouseY = Math.max(0, Math.min(CANVAS_HEIGHT, y));
@@ -233,11 +237,9 @@ document.addEventListener("DOMContentLoaded", () => {
       b.y += b.dy;
 
       // Check bullet collisions with active balloons
+      // Bullet pierces through popped balloons and does NOT disappear upon hit
       for (const bal of balloons) {
-        if (checkCollision(b, bal)) {
-          b.active = false;
-          break;
-        }
+        checkCollision(b, bal);
       }
 
       // Check canvas boundary (bullet leaves screen)
@@ -311,7 +313,7 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.lineTo(tip.x, tip.y);
     ctx.stroke();
 
-    // Draw Mouse Crosshair (Aimer)
+    // Draw Mouse Crosshair (Aimer) - only when actively aiming and NOT paused
     if (mouseActive && !isGameOver && !paused && active) {
       const RADIUS = 7;
       ctx.beginPath();
@@ -338,6 +340,21 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.textAlign = "left";
     ctx.fillText("Count: " + count, 270, 20);
     ctx.fillText("Misses: " + misses, 270, 42);
+
+    // Draw Paused Overlay
+    if (paused && !isGameOver && active) {
+      ctx.fillStyle = "rgba(255, 255, 255, 0.75)";
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+      ctx.font = "bold 38px Sans-Serif";
+      ctx.fillStyle = "#1e293b";
+      ctx.textAlign = "center";
+      ctx.fillText("PAUSED", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 - 8);
+
+      ctx.font = "15px Sans-Serif";
+      ctx.fillStyle = "#64748b";
+      ctx.fillText("Press P or click Play to resume", CANVAS_WIDTH / 2, CANVAS_HEIGHT / 2 + 28);
+    }
 
     // Draw Game Over Screen
     if (isGameOver) {
@@ -368,6 +385,7 @@ document.addEventListener("DOMContentLoaded", () => {
     bullets = [];
     balloons = [];
     gunAngle = 270.0;
+    mouseActive = false;
 
     pauseBtn.disabled = false;
     playBtn.disabled = true;
@@ -385,6 +403,7 @@ document.addEventListener("DOMContentLoaded", () => {
     paused = true;
     pauseBtn.disabled = true;
     playBtn.disabled = false;
+    mouseActive = false;
     if (balloonTimer) clearInterval(balloonTimer);
   }
 
@@ -400,6 +419,7 @@ document.addEventListener("DOMContentLoaded", () => {
   function triggerGameOver() {
     isGameOver = true;
     active = false;
+    mouseActive = false;
     if (balloonTimer) clearInterval(balloonTimer);
     pauseBtn.disabled = true;
     playBtn.disabled = true;
@@ -412,6 +432,7 @@ document.addEventListener("DOMContentLoaded", () => {
     active = false;
     paused = false;
     isGameOver = false;
+    mouseActive = false;
     if (balloonTimer) clearInterval(balloonTimer);
     bullets = [];
     balloons = [];
@@ -528,8 +549,9 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Canvas Mouse Controls
+  // Canvas Mouse Controls - Ignored when paused
   canvas.addEventListener("mousemove", (e) => {
+    if (!active || paused || isGameOver) return;
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -543,14 +565,23 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   canvas.addEventListener("mousedown", (e) => {
+    if (!active || paused || isGameOver) return;
     if (e.button === 0) {
       fireBullet();
     }
   });
 
-  // Keyboard Controls
+  // Keyboard Controls - Ignored when paused (except P to unpause)
   window.addEventListener("keydown", (e) => {
     if (!gameScreen.classList.contains("active")) return;
+
+    if (e.key === "p" || e.key === "P") {
+      if (!paused) pauseGame();
+      else resumeGame();
+      return;
+    }
+
+    if (!active || paused || isGameOver) return;
 
     if (e.key === "ArrowLeft") {
       turnLeft();
@@ -559,9 +590,6 @@ document.addEventListener("DOMContentLoaded", () => {
     } else if (e.key === "ArrowUp" || e.key === " ") {
       e.preventDefault();
       fireBullet();
-    } else if (e.key === "p" || e.key === "P") {
-      if (!paused) pauseGame();
-      else resumeGame();
     }
   });
 
