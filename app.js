@@ -127,27 +127,29 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function turnLeft() {
-    if (gunAngle % 369 > 180) {
-      gunAngle -= 5;
-    }
+    gunAngle = Math.max(185.0, gunAngle - 5.0);
     mouseActive = false;
   }
 
   function turnRight() {
-    if (gunAngle < 360) {
-      gunAngle += 5;
-    }
+    gunAngle = Math.min(355.0, gunAngle + 5.0);
     mouseActive = false;
   }
 
   function aimAt(x, y) {
-    if (y <= CANVAS_HEIGHT) {
-      mouseActive = true;
-      mouseX = x;
-      mouseY = y;
-      const ang = -1.0 * Math.atan2(x - CENTER_X, y - GUN_BASE_Y) * (180.0 / Math.PI);
-      gunAngle = ang + 270.0;
-    }
+    mouseActive = true;
+    mouseX = Math.max(0, Math.min(CANVAS_WIDTH, x));
+    mouseY = Math.max(0, Math.min(CANVAS_HEIGHT, y));
+
+    const dx = mouseX - CENTER_X;
+    // Force dy to be strictly negative so the gun barrel always points UP into the playfield
+    const dy = Math.min(-1, mouseY - GUN_BASE_Y);
+
+    const rad = Math.atan2(dy, dx);
+    const deg = rad * (180.0 / Math.PI) + 360.0;
+
+    // Clamp strictly between 185 deg and 355 deg (cannot point downward or below canvas)
+    gunAngle = Math.max(185.0, Math.min(355.0, deg));
   }
 
   function fireBullet() {
@@ -412,13 +414,7 @@ document.addEventListener("DOMContentLoaded", () => {
       const data = localStorage.getItem(STORAGE_KEY);
       if (data) return JSON.parse(data);
     } catch (e) {}
-    return [
-      { name: "Ace", score: 25 },
-      { name: "BalloonMaster", score: 20 },
-      { name: "Sharpshooter", score: 15 },
-      { name: "TopGun", score: 10 },
-      { name: "Player1", score: 5 }
-    ];
+    return [];
   }
 
   function saveHighScores(scores) {
@@ -432,15 +428,23 @@ document.addEventListener("DOMContentLoaded", () => {
     scores.sort((a, b) => b.score - a.score);
 
     scoresList.innerHTML = "";
-    scores.slice(0, 10).forEach((entry, idx) => {
-      const row = document.createElement("div");
-      row.className = "score-row";
-      row.innerHTML = `
-        <span class="player-name">${idx + 1}. ${escapeHtml(entry.name)}</span>
-        <span class="player-score">${entry.score}</span>
+    if (scores.length === 0) {
+      scoresList.innerHTML = `
+        <div style="padding: 18px; text-align: center; color: #777; font-size: 13px;">
+          No scores yet. Play a game and submit your score!
+        </div>
       `;
-      scoresList.appendChild(row);
-    });
+    } else {
+      scores.slice(0, 10).forEach((entry, idx) => {
+        const row = document.createElement("div");
+        row.className = "score-row";
+        row.innerHTML = `
+          <span class="player-name">${idx + 1}. ${escapeHtml(entry.name)}</span>
+          <span class="player-score">${entry.score}</span>
+        `;
+        scoresList.appendChild(row);
+      });
+    }
 
     if (isGameOver) {
       submitSection.style.display = "flex";
