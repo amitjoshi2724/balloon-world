@@ -832,6 +832,15 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize Sound UI state (OFF by default)
   updateSoundUI();
 
+  // Register Service Worker for offline PWA functionality
+  if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('./sw.js').catch((err) => {
+        console.warn('ServiceWorker registration failed:', err);
+      });
+    });
+  }
+
   // Start Animation Loop
   animationFrameId = requestAnimationFrame((timestamp) => {
     lastTime = timestamp;
