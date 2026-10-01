@@ -108,7 +108,9 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fixed 60Hz Physics Timestep Accumulator (matching Spaceship-Flight mechanics)
   // Ensures constant rotation and physics speed regardless of 60Hz, 120Hz ProMotion, or 144Hz displays
   const FIXED_TIMESTEP = 1000 / 60; // 16.667ms per physics tick
-  const ROTATION_SPEED_DEG_PER_SEC = 110.0; // degrees per second (~1.83 deg per 60Hz tick)
+  const ROTATION_SPEED_DEG_PER_SEC = 50.0; // Calm, precise, comfortable rotation speed (50°/sec)
+  const TAP_NUDGE_DEG = 1.5; // Very gentle nudge on single tap (cushioned, no jerk)
+  const SMOOTH_FACTOR = 16.0; // Exponential smoothing rate for organic cushioned transition
   let lastTime = performance.now();
   let accumulator = 0;
 
@@ -118,12 +120,16 @@ document.addEventListener("DOMContentLoaded", () => {
   let isGameOver = false;
   let count = 0;
   let misses = 0;
-  let gunAngle = 270.0; // degrees (270 = straight up)
+  let gunAngle = 270.0; // actual visual angle (degrees, 270 = straight up)
+  let targetGunAngle = 270.0; // target angle driven by input
   let bullets = [];
   let balloons = [];
   let mouseActive = false;
   let mouseX = 0;
   let mouseY = 0;
+  let lastMouseClientX = -1;
+  let lastMouseClientY = -1;
+  let inputMode = "mouse"; // "mouse" | "keyboard"
   let balloonTimer = null;
   let animationFrameId = null;
 
@@ -149,21 +155,24 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function turnLeft(step = 5.0) {
+  function turnLeft(step = TAP_NUDGE_DEG) {
     if (!active || paused || isGameOver) return;
-    gunAngle = Math.max(185.0, gunAngle - step);
+    inputMode = "keyboard";
     mouseActive = false;
+    targetGunAngle = Math.max(185.0, targetGunAngle - step);
   }
 
-  function turnRight(step = 5.0) {
+  function turnRight(step = TAP_NUDGE_DEG) {
     if (!active || paused || isGameOver) return;
-    gunAngle = Math.min(355.0, gunAngle + step);
+    inputMode = "keyboard";
     mouseActive = false;
+    targetGunAngle = Math.min(355.0, targetGunAngle + step);
   }
 
   function aimAt(x, y) {
     if (!active || paused || isGameOver) return;
     mouseActive = true;
+    inputMode = "mouse";
     mouseX = Math.max(0, Math.min(CANVAS_WIDTH, x));
     mouseY = Math.max(0, Math.min(CANVAS_HEIGHT, y));
 
@@ -175,7 +184,8 @@ document.addEventListener("DOMContentLoaded", () => {
     const deg = rad * (180.0 / Math.PI) + 360.0;
 
     // Clamp strictly between 185 deg and 355 deg (cannot point downward or below horizon)
-    gunAngle = Math.max(185.0, Math.min(355.0, deg));
+    targetGunAngle = Math.max(185.0, Math.min(355.0, deg));
+    gunAngle = targetGunAngle; // Direct tracking for mouse
   }
 
   function fireBullet() {
@@ -244,15 +254,24 @@ document.addEventListener("DOMContentLoaded", () => {
   function update(dtSeconds = 1 / 60) {
     if (!active || paused || isGameOver) return;
 
-    // Smooth continuous cannon turning with constant speed across all displays
-    const angleStep = ROTATION_SPEED_DEG_PER_SEC * dtSeconds;
-    if (keys.left) {
-      gunAngle = Math.max(185.0, gunAngle - angleStep);
-      mouseActive = false;
-    }
-    if (keys.right) {
-      gunAngle = Math.min(355.0, gunAngle + angleStep);
-      mouseActive = false;
+    // Smooth cushioned rotation for keyboard input
+    if (inputMode === "keyboard") {
+      if (keys.left) {
+        targetGunAngle = Math.max(185.0, targetGunAngle - ROTATION_SPEED_DEG_PER_SEC * dtSeconds);
+      }
+      if (keys.right) {
+        targetGunAngle = Math.min(355.0, targetGunAngle + ROTATION_SPEED_DEG_PER_SEC * dtSeconds);
+      }
+
+      // Exponential damping towards target angle (eliminates single tap jerk)
+      const diff = targetGunAngle - gunAngle;
+      if (Math.abs(diff) > 0.01) {
+        const smoothStep = diff * (1.0 - Math.exp(-SMOOTH_FACTOR * dtSeconds));
+        gunAngle += smoothStep;
+        gunAngle = Math.max(185.0, Math.min(355.0, gunAngle));
+      } else {
+        gunAngle = targetGunAngle;
+      }
     }
 
     // Update Bullets
@@ -342,8 +361,8 @@ document.addEventListener("DOMContentLoaded", () => {
     ctx.lineTo(tip.x, tip.y);
     ctx.stroke();
 
-    // Draw Mouse Crosshair (Aimer) - only when actively aiming and NOT paused
-    if (mouseActive && !isGameOver && !paused && active) {
+    // Draw Mouse Crosshair (Aimer) - only when actively aiming with mouse and NOT paused
+    if (inputMode === "mouse" && mouseActive && !isGameOver && !paused && active) {
       const RADIUS = 7;
       ctx.beginPath();
       ctx.fillStyle = "#ff0000";
@@ -426,10 +445,10 @@ document.addEventListener("DOMContentLoaded", () => {
     isGameOver = false;
     count = 0;
     misses = 0;
-    bullets = [];
-    balloons = [];
     gunAngle = 270.0;
+    targetGunAngle = 270.0;
     mouseActive = false;
+    inputMode = "mouse";
     keys.left = false;
     keys.right = false;
     lastTime = performance.now();
@@ -454,6 +473,7 @@ document.addEventListener("DOMContentLoaded", () => {
     pauseBtn.disabled = true;
     playBtn.disabled = false;
     mouseActive = false;
+    targetGunAngle = gunAngle;
     keys.left = false;
     keys.right = false;
     blurActiveElement();
@@ -467,6 +487,7 @@ document.addEventListener("DOMContentLoaded", () => {
     playBtn.disabled = true;
     keys.left = false;
     keys.right = false;
+    targetGunAngle = gunAngle;
     lastTime = performance.now();
     accumulator = 0;
     blurActiveElement();
@@ -478,6 +499,7 @@ document.addEventListener("DOMContentLoaded", () => {
     isGameOver = true;
     active = false;
     mouseActive = false;
+    targetGunAngle = gunAngle;
     keys.left = false;
     keys.right = false;
     if (balloonTimer) clearInterval(balloonTimer);
@@ -496,6 +518,7 @@ document.addEventListener("DOMContentLoaded", () => {
     mouseActive = false;
     keys.left = false;
     keys.right = false;
+    targetGunAngle = gunAngle;
     if (balloonTimer) clearInterval(balloonTimer);
     bullets = [];
     balloons = [];
@@ -633,6 +656,19 @@ document.addEventListener("DOMContentLoaded", () => {
   // Canvas Mouse Controls - Ignored when paused
   canvas.addEventListener("mousemove", (e) => {
     if (!active || paused || isGameOver) return;
+
+    // If player was using keyboard, ignore trackpad micro-brushing (< 10px) to prevent snapping/jerking
+    if (inputMode === "keyboard") {
+      if (lastMouseClientX >= 0 && lastMouseClientY >= 0) {
+        const dist = Math.hypot(e.clientX - lastMouseClientX, e.clientY - lastMouseClientY);
+        if (dist < 10) return;
+      }
+      inputMode = "mouse";
+    }
+
+    lastMouseClientX = e.clientX;
+    lastMouseClientY = e.clientY;
+
     const rect = canvas.getBoundingClientRect();
     const scaleX = canvas.width / rect.width;
     const scaleY = canvas.height / rect.height;
@@ -642,18 +678,21 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   canvas.addEventListener("mouseleave", () => {
-    mouseActive = false;
+    if (inputMode === "mouse") {
+      mouseActive = false;
+    }
   });
 
   canvas.addEventListener("mousedown", (e) => {
     if (!active || paused || isGameOver) return;
     blurActiveElement();
+    inputMode = "mouse";
     if (e.button === 0) {
       fireBullet();
     }
   });
 
-  // Keyboard Controls (Smooth continuous turning with constant delta-time velocity)
+  // Keyboard Controls (Smooth cushioned rotation, completely isolated from trackpad interference)
   window.addEventListener("keydown", (e) => {
     if (!gameScreen.classList.contains("active")) return;
 
@@ -671,12 +710,21 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isLeft) {
       e.preventDefault();
+      if (!keys.left) {
+        // Switch to keyboard mode and sync target angle smoothly
+        inputMode = "keyboard";
+        mouseActive = false;
+        targetGunAngle = Math.max(185.0, gunAngle - TAP_NUDGE_DEG);
+      }
       keys.left = true;
-      mouseActive = false;
     } else if (isRight) {
       e.preventDefault();
+      if (!keys.right) {
+        inputMode = "keyboard";
+        mouseActive = false;
+        targetGunAngle = Math.min(355.0, gunAngle + TAP_NUDGE_DEG);
+      }
       keys.right = true;
-      mouseActive = false;
     } else if (isFire) {
       e.preventDefault();
       if (!e.repeat) {
