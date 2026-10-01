@@ -27,8 +27,22 @@ document.addEventListener("DOMContentLoaded", () => {
   const submitScoreBtn = document.getElementById("submit-score-btn");
   const scoresList = document.getElementById("scores-list");
 
+  // Sound Control Elements
+  const menuSoundBtn = document.getElementById("menu-sound-btn");
+  const menuSoundIcon = document.getElementById("menu-sound-icon");
+  const menuSoundText = document.getElementById("menu-sound-text");
+  const gameSoundBtn = document.getElementById("game-sound-btn");
+  const soundHintStatus = document.getElementById("sound-hint-status");
+
   // Web Audio Context for synthesized retro SFX
   let audioCtx = null;
+  // Sound is OFF by default. Player can toggle anytime via button or 'M' key.
+  let soundEnabled = false;
+  const savedSound = localStorage.getItem("balloon_world_sound_enabled");
+  if (savedSound === "true") {
+    soundEnabled = true;
+  }
+
   function getAudioContext() {
     if (!audioCtx) {
       const AudioContext = window.AudioContext || window.webkitAudioContext;
@@ -40,7 +54,44 @@ document.addEventListener("DOMContentLoaded", () => {
     return audioCtx;
   }
 
+  function updateSoundUI() {
+    const soundText = soundEnabled ? "ON" : "OFF";
+    const soundIcon = soundEnabled ? "🔊" : "🔇";
+
+    if (menuSoundIcon) menuSoundIcon.textContent = soundIcon;
+    if (menuSoundText) menuSoundText.textContent = soundText;
+    if (menuSoundBtn) {
+      menuSoundBtn.classList.toggle("sound-on", soundEnabled);
+      menuSoundBtn.setAttribute("aria-pressed", soundEnabled ? "true" : "false");
+    }
+
+    if (gameSoundBtn) {
+      gameSoundBtn.textContent = `${soundIcon} Sound: ${soundText}`;
+      gameSoundBtn.classList.toggle("sound-on", soundEnabled);
+      gameSoundBtn.setAttribute("aria-pressed", soundEnabled ? "true" : "false");
+    }
+
+    if (soundHintStatus) {
+      soundHintStatus.textContent = soundText;
+      soundHintStatus.style.color = soundEnabled ? "#16a34a" : "#dc2626";
+    }
+  }
+
+  function toggleSound() {
+    soundEnabled = !soundEnabled;
+    try {
+      localStorage.setItem("balloon_world_sound_enabled", soundEnabled ? "true" : "false");
+    } catch (e) { }
+
+    if (soundEnabled) {
+      getAudioContext();
+      playPopSound(); // subtle audio feedback
+    }
+    updateSoundUI();
+  }
+
   function playShotSound() {
+    if (!soundEnabled) return;
     try {
       const ctx = getAudioContext();
       if (!ctx) return;
@@ -55,10 +106,11 @@ document.addEventListener("DOMContentLoaded", () => {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.08);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   function playPopSound() {
+    if (!soundEnabled) return;
     try {
       const ctx = getAudioContext();
       if (!ctx) return;
@@ -73,10 +125,11 @@ document.addEventListener("DOMContentLoaded", () => {
       gain.connect(ctx.destination);
       osc.start();
       osc.stop(ctx.currentTime + 0.09);
-    } catch (e) {}
+    } catch (e) { }
   }
 
   function playGameOverSound() {
+    if (!soundEnabled) return;
     try {
       const ctx = getAudioContext();
       if (!ctx) return;
@@ -93,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
         osc.start(now + i * 0.18);
         osc.stop(now + (i + 1) * 0.18);
       });
-    } catch (e) {}
+    } catch (e) { }
   }
 
   // Game Constants matching Java Gun & BalloonMaker
@@ -108,7 +161,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // Fixed 60Hz Physics Timestep Accumulator (matching Spaceship-Flight mechanics)
   // Ensures constant rotation and physics speed regardless of 60Hz, 120Hz ProMotion, or 144Hz displays
   const FIXED_TIMESTEP = 1000 / 60; // 16.667ms per physics tick
-  const ROTATION_SPEED_DEG_PER_SEC = 50.0; // Calm, precise, comfortable rotation speed (50°/sec)
+  const ROTATION_SPEED_DEG_PER_SEC = 75.0; // Calm, precise, comfortable rotation speed (50°/sec)
   const TAP_NUDGE_DEG = 1.5; // Very gentle nudge on single tap (cushioned, no jerk)
   const SMOOTH_FACTOR = 16.0; // Exponential smoothing rate for organic cushioned transition
   let lastTime = performance.now();
@@ -534,14 +587,14 @@ document.addEventListener("DOMContentLoaded", () => {
     try {
       const data = localStorage.getItem(STORAGE_KEY);
       if (data) return JSON.parse(data);
-    } catch (e) {}
+    } catch (e) { }
     return [];
   }
 
   function saveHighScores(scores) {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(scores));
-    } catch (e) {}
+    } catch (e) { }
   }
 
   function openLeaderboard(showSubmit = false) {
@@ -601,6 +654,20 @@ document.addEventListener("DOMContentLoaded", () => {
     blurActiveElement();
     openLeaderboard(false);
   });
+
+  if (menuSoundBtn) {
+    menuSoundBtn.addEventListener("click", () => {
+      blurActiveElement();
+      toggleSound();
+    });
+  }
+
+  if (gameSoundBtn) {
+    gameSoundBtn.addEventListener("click", () => {
+      blurActiveElement();
+      toggleSound();
+    });
+  }
 
   returnMenuBtn.addEventListener("click", () => {
     blurActiveElement();
@@ -694,6 +761,15 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Keyboard Controls (Smooth cushioned rotation, completely isolated from trackpad interference)
   window.addEventListener("keydown", (e) => {
+    if (document.activeElement === playerNameInput) return;
+
+    // Toggle Sound with 'M' anytime
+    if (e.key === "m" || e.key === "M") {
+      e.preventDefault();
+      toggleSound();
+      return;
+    }
+
     if (!gameScreen.classList.contains("active")) return;
 
     if (e.key === "p" || e.key === "P") {
@@ -752,6 +828,9 @@ document.addEventListener("DOMContentLoaded", () => {
     gameScreen.classList.add("active");
     startGame();
   }
+
+  // Initialize Sound UI state (OFF by default)
+  updateSoundUI();
 
   // Start Animation Loop
   animationFrameId = requestAnimationFrame((timestamp) => {

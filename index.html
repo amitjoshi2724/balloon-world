@@ -5,10 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Balloon World</title>
   <meta name="description" content="Balloon World - Classic retro balloon popping arcade game ported to HTML5, CSS3, and JavaScript.">
-    <link rel="icon" type="image/svg+xml" href="favicon.svg">
-  <link rel="icon" type="image/png" sizes="32x32" href="favicon-32x32.png">
-  <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <link rel="shortcut icon" href="favicon.ico">
+  <link rel="icon" type="image/jpeg" href="new_favicon.jpeg">
+  <link rel="shortcut icon" href="new_favicon.jpeg">
+  <link rel="apple-touch-icon" href="new_favicon.jpeg">
   <link rel="stylesheet" href="style.css">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -70,6 +69,13 @@
             <p class="game-tagline">Pop balloons • Don&#39;t let them escape!</p>
           </div>
 
+          <!-- Slapped right in the middle: Favicon Emblem showcase -->
+          <div class="menu-emblem-wrap">
+            <div class="menu-emblem-card" title="Balloon World">
+              <img src="new_favicon.jpeg" alt="Balloon World Emblem" class="menu-emblem-img">
+            </div>
+          </div>
+
           <!-- Instructions Card -->
           <div class="menu-card">
             <p class="mission-text">
@@ -78,7 +84,7 @@
             <div class="controls-grid">
               <div class="control-item">
                 <span class="control-keys"><kbd>←</kbd> <kbd>→</kbd> / <kbd>A</kbd> <kbd>D</kbd></span>
-                <span class="control-desc">Smooth Aim Cannon</span>
+                <span class="control-desc">Smooth Aim</span>
               </div>
               <div class="control-item">
                 <span class="control-keys">🖱️ Mouse</span>
@@ -92,6 +98,10 @@
                 <span class="control-keys"><kbd>P</kbd></span>
                 <span class="control-desc">Pause / Resume</span>
               </div>
+              <div class="control-item control-item-wide">
+                <span class="control-keys"><kbd>M</kbd></span>
+                <span class="control-desc">Sound Setting: <strong id="sound-hint-status">OFF</strong> (Click or press M)</span>
+              </div>
             </div>
           </div>
 
@@ -102,6 +112,9 @@
             </button>
             <button type="button" class="swing-btn menu-btn leaderboard-hero-btn" id="menu-leaderboard-btn">
               <span class="btn-icon">🏆</span> High Scores
+            </button>
+            <button type="button" class="swing-btn menu-btn sound-hero-btn" id="menu-sound-btn" title="Toggle Sound (Shortcut: M)">
+              <span class="sound-icon" id="menu-sound-icon">🔇</span> Sound: <span id="menu-sound-text">OFF</span>
             </button>
           </div>
         </div>
@@ -117,6 +130,7 @@
           <button type="button" class="swing-btn control-btn-ui" id="pause-btn">Pause</button>
           <button type="button" class="swing-btn control-btn-ui" id="play-btn" disabled>Play</button>
           <button type="button" class="swing-btn control-btn-ui" id="restart-btn">Restart</button>
+          <button type="button" class="swing-btn control-btn-ui sound-btn-ui" id="game-sound-btn" title="Toggle Sound (M)">🔇 Sound: OFF</button>
           <button type="button" class="swing-btn control-btn-ui menu-back-btn" id="return-menu-btn">Main Menu</button>
         </div>
       </div>
@@ -162,7 +176,7 @@
       <span class="footer-dot">•</span>
       <span class="footer-text">Balloon World Classic Arcade Port</span>
       <span class="footer-dot">•</span>
-      <span class="footer-text">Keys: ← → to aim • ↑ or Space or Click to fire • P to pause</span>
+      <span class="footer-text">Keys: ← → to aim • ↑ or Space or Click to fire • P to pause • M to toggle sound</span>
     </div>
   </div>
 
