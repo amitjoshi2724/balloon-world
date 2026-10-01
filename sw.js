@@ -1,5 +1,10 @@
-const CACHE_NAME = 'balloon-world-v1.0.0';
-const ASSETS_TO_CACHE = [
+/**
+ * Balloon World - Service Worker
+ * Provides 100% offline gameplay, persistent asset caching, and background updates.
+ */
+
+const CACHE_NAME = 'balloon-world-v1.0.1';
+const CORE_ASSETS = [
   './',
   './index.html',
   './style.css',
@@ -15,25 +20,32 @@ const ASSETS_TO_CACHE = [
   './apple-touch-icon.png'
 ];
 
-// Install Event: Pre-cache all core game assets
+// Install: Pre-cache all core game assets resiliently
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
-      return cache.addAll(ASSETS_TO_CACHE);
+      return Promise.allSettled(
+        CORE_ASSETS.map((assetUrl) =>
+          cache.add(assetUrl).catch((err) => {
+            console.warn(`[SW] Warning: could not pre-cache ${assetUrl}:`, err);
+          })
+        )
+      );
     }).then(() => {
       return self.skipWaiting();
     })
   );
 });
 
-// Activate Event: Clear older caches if version bumps
+// Activate: Purge stale caches from older versions
 self.addEventListener('activate', (event) => {
   event.waitUntil(
-    caches.keys().then((cacheNames) => {
+    caches.keys().then((keys) => {
       return Promise.all(
-        cacheNames.map((name) => {
-          if (name !== CACHE_NAME) {
-            return caches.delete(name);
+        keys.map((key) => {
+          if (key !== CACHE_NAME) {
+            console.log('[SW] Removing old cache:', key);
+            return caches.delete(key);
           }
         })
       );
@@ -43,36 +55,47 @@ self.addEventListener('activate', (event) => {
   );
 });
 
-// Fetch Event: Network-first for scripts & navigation, Cache-first for images/styles
+// Fetch: Network-first for code & documents, Cache-first for images & fonts
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
 
-  const isCodeOrDoc = event.request.mode === 'navigate' ||
-                      event.request.destination === 'script' ||
-                      url.pathname.endsWith('.js') ||
-                      url.pathname.endsWith('.html');
-
-  if (isCodeOrDoc) {
-    // Network-first strategy so game logic updates apply immediately when online
+  // Transparent fallback for icon requests
+  if (url.pathname.endsWith('/favicon.ico')) {
     event.respondWith(
-      fetch(event.request)
-        .then((networkResponse) => {
-          if (networkResponse && networkResponse.status === 200) {
-            const responseToCache = networkResponse.clone();
-            caches.open(CACHE_NAME).then((cache) => {
-              cache.put(event.request, responseToCache);
-            });
-          }
-          return networkResponse;
-        })
-        .catch(() => caches.match(event.request).then(cached => cached || caches.match('./index.html')))
+      caches.match('./new_favicon.jpeg').then((cached) => cached || fetch(event.request))
     );
     return;
   }
 
-  // Cache-first strategy for media, styles, and other assets
+  const isNavigation = event.request.mode === 'navigate';
+  const isScriptOrHtml = event.request.destination === 'script' ||
+                         url.pathname.endsWith('.js') ||
+                         url.pathname.endsWith('.html');
+
+  if (isNavigation || isScriptOrHtml) {
+    // Network-first: fetch latest updates from GitHub Pages when online
+    event.respondWith(
+      fetch(event.request)
+        .then((networkResponse) => {
+          if (networkResponse && networkResponse.status === 200) {
+            const clone = networkResponse.clone();
+            caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+          }
+          return networkResponse;
+        })
+        .catch(() => {
+          // Offline fallback
+          return caches.match(event.request).then((cached) => {
+            return cached || caches.match('./index.html');
+          });
+        })
+    );
+    return;
+  }
+
+  // Cache-first for images, fonts, styles
   event.respondWith(
     caches.match(event.request).then((cachedResponse) => {
       if (cachedResponse) {
@@ -82,11 +105,13 @@ self.addEventListener('fetch', (event) => {
         if (!networkResponse || networkResponse.status !== 200) {
           return networkResponse;
         }
-        const responseToCache = networkResponse.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseToCache);
-        });
+        // Cache static resources like Google Fonts or stylesheet assets
+        const clone = networkResponse.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
         return networkResponse;
+      }).catch((err) => {
+        // Return cached index.html or empty fallback if completely unreachable
+        return caches.match('./index.html');
       });
     })
   );

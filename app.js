@@ -832,13 +832,60 @@ document.addEventListener("DOMContentLoaded", () => {
   // Initialize Sound UI state (OFF by default)
   updateSoundUI();
 
-  // Register Service Worker for offline PWA functionality
-  if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('./sw.js').catch((err) => {
-        console.warn('ServiceWorker registration failed:', err);
+  // PWA Install Prompt Handler
+  let deferredInstallPrompt = null;
+  const menuInstallBtn = document.getElementById("menu-install-btn");
+
+  window.addEventListener("beforeinstallprompt", (e) => {
+    e.preventDefault();
+    deferredInstallPrompt = e;
+    if (menuInstallBtn) {
+      menuInstallBtn.style.display = "inline-flex";
+      menuInstallBtn.addEventListener("click", async () => {
+        blurActiveElement();
+        if (!deferredInstallPrompt) return;
+        deferredInstallPrompt.prompt();
+        const { outcome } = await deferredInstallPrompt.userChoice;
+        console.log(`[PWA] Install prompt outcome: ${outcome}`);
+        deferredInstallPrompt = null;
+        menuInstallBtn.style.display = "none";
       });
-    });
+    }
+  });
+
+  window.addEventListener("appinstalled", () => {
+    console.log("[PWA] Balloon World successfully installed to home screen / desktop.");
+    if (menuInstallBtn) menuInstallBtn.style.display = "none";
+    deferredInstallPrompt = null;
+  });
+
+  // Dedicated Service Worker Registration for 100% Offline Play
+  function initServiceWorker() {
+    if ('serviceWorker' in navigator && (window.location.protocol === 'http:' || window.location.protocol === 'https:')) {
+      navigator.serviceWorker.register('./sw.js')
+        .then((registration) => {
+          console.log('[PWA] ServiceWorker registered with scope:', registration.scope);
+          registration.onupdatefound = () => {
+            const installingWorker = registration.installing;
+            if (installingWorker) {
+              installingWorker.onstatechange = () => {
+                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  console.log('[PWA] New update available in background.');
+                }
+              };
+            }
+          };
+        })
+        .catch((err) => {
+          console.warn('[PWA] ServiceWorker registration error:', err);
+        });
+    }
+  }
+
+  if (document.readyState === 'complete') {
+    initServiceWorker();
+  } else {
+    window.addEventListener('load', initServiceWorker);
   }
 
   // Start Animation Loop

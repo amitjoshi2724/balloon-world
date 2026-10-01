@@ -498,6 +498,21 @@ kbd {
   letter-spacing: 0.2px;
 }
 
+.install-hero-btn {
+  background: linear-gradient(180deg, #eff6ff 0%, #dbeafe 100%);
+  color: #1d4ed8;
+  border: 1px solid #93c5fd;
+  box-shadow: 0 2px 6px rgba(37, 99, 235, 0.15), inset 0 1px 0 #ffffff;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.install-hero-btn:hover {
+  background: linear-gradient(180deg, #dbeafe 0%, #bfdbfe 100%);
+  border-color: #60a5fa;
+  transform: translateY(-1px);
+}
+
 .sound-hero-btn {
   background: linear-gradient(180deg, #ffffff 0%, #f1f5f9 100%);
   color: #475569;
