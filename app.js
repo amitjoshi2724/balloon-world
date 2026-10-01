@@ -105,8 +105,12 @@ document.addEventListener("DOMContentLoaded", () => {
   const GUN_STROKE = 8;
   const MAX_MISSES = 3; // matching instructions ("If you miss three balloons the game is over")
 
-  // Smooth continuous rotation speed matching Spaceship-Flight (~210 deg/sec)
-  const ROTATION_SPEED = 3.5; 
+  // Fixed 60Hz Physics Timestep Accumulator (matching Spaceship-Flight mechanics)
+  // Ensures constant rotation and physics speed regardless of 60Hz, 120Hz ProMotion, or 144Hz displays
+  const FIXED_TIMESTEP = 1000 / 60; // 16.667ms per physics tick
+  const ROTATION_SPEED_DEG_PER_SEC = 110.0; // degrees per second (~1.83 deg per 60Hz tick)
+  let lastTime = performance.now();
+  let accumulator = 0;
 
   // Game State
   let active = false;
@@ -145,15 +149,15 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  function turnLeft() {
+  function turnLeft(step = 5.0) {
     if (!active || paused || isGameOver) return;
-    gunAngle = Math.max(185.0, gunAngle - ROTATION_SPEED);
+    gunAngle = Math.max(185.0, gunAngle - step);
     mouseActive = false;
   }
 
-  function turnRight() {
+  function turnRight(step = 5.0) {
     if (!active || paused || isGameOver) return;
-    gunAngle = Math.min(355.0, gunAngle + ROTATION_SPEED);
+    gunAngle = Math.min(355.0, gunAngle + step);
     mouseActive = false;
   }
 
@@ -236,17 +240,18 @@ document.addEventListener("DOMContentLoaded", () => {
     return false;
   }
 
-  // Update Game Physics
-  function update() {
+  // Update Game Physics with Fixed Timestep dtSeconds
+  function update(dtSeconds = 1 / 60) {
     if (!active || paused || isGameOver) return;
 
-    // Smooth continuous cannon turning (matching Spaceship-Flight mechanics)
+    // Smooth continuous cannon turning with constant speed across all displays
+    const angleStep = ROTATION_SPEED_DEG_PER_SEC * dtSeconds;
     if (keys.left) {
-      gunAngle = Math.max(185.0, gunAngle - ROTATION_SPEED);
+      gunAngle = Math.max(185.0, gunAngle - angleStep);
       mouseActive = false;
     }
     if (keys.right) {
-      gunAngle = Math.min(355.0, gunAngle + ROTATION_SPEED);
+      gunAngle = Math.min(355.0, gunAngle + angleStep);
       mouseActive = false;
     }
 
@@ -392,9 +397,24 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   }
 
-  // Animation Loop
-  function gameLoop() {
-    update();
+  // Animation Loop with Fixed-Timestep Accumulator (matching Spaceship-Flight)
+  function gameLoop(currentTime) {
+    if (!lastTime) lastTime = currentTime;
+    let frameTime = currentTime - lastTime;
+    lastTime = currentTime;
+
+    // Spiral of death prevention: cap frameTime to at most 100ms
+    if (frameTime > 100) frameTime = 100;
+    if (frameTime < 0) frameTime = 0;
+
+    accumulator += frameTime;
+
+    const dtSeconds = FIXED_TIMESTEP / 1000;
+    while (accumulator >= FIXED_TIMESTEP) {
+      update(dtSeconds);
+      accumulator -= FIXED_TIMESTEP;
+    }
+
     render();
     animationFrameId = requestAnimationFrame(gameLoop);
   }
@@ -412,6 +432,8 @@ document.addEventListener("DOMContentLoaded", () => {
     mouseActive = false;
     keys.left = false;
     keys.right = false;
+    lastTime = performance.now();
+    accumulator = 0;
 
     pauseBtn.disabled = false;
     playBtn.disabled = true;
@@ -445,6 +467,8 @@ document.addEventListener("DOMContentLoaded", () => {
     playBtn.disabled = true;
     keys.left = false;
     keys.right = false;
+    lastTime = performance.now();
+    accumulator = 0;
     blurActiveElement();
     if (balloonTimer) clearInterval(balloonTimer);
     balloonTimer = setInterval(spawnBalloon, 1800);
@@ -629,7 +653,7 @@ document.addEventListener("DOMContentLoaded", () => {
     }
   });
 
-  // Keyboard Controls (Smooth continuous turning matching Spaceship-Flight)
+  // Keyboard Controls (Smooth continuous turning with constant delta-time velocity)
   window.addEventListener("keydown", (e) => {
     if (!gameScreen.classList.contains("active")) return;
 
@@ -647,18 +671,10 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (isLeft) {
       e.preventDefault();
-      if (!keys.left) {
-        // Immediate step on initial keydown for snappy taps
-        gunAngle = Math.max(185.0, gunAngle - ROTATION_SPEED);
-      }
       keys.left = true;
       mouseActive = false;
     } else if (isRight) {
       e.preventDefault();
-      if (!keys.right) {
-        // Immediate step on initial keydown for snappy taps
-        gunAngle = Math.min(355.0, gunAngle + ROTATION_SPEED);
-      }
       keys.right = true;
       mouseActive = false;
     } else if (isFire) {
@@ -671,7 +687,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   window.addEventListener("keyup", (e) => {
     const isLeft = e.key === "ArrowLeft" || e.code === "ArrowLeft" || e.key === "a" || e.key === "A" || e.code === "KeyA";
-    const isRight = e.key === "ArrowRight" || e.code === "ArrowRight" || e.key === "d" || e.code === "KeyD";
+    const isRight = e.key === "ArrowRight" || e.code === "ArrowRight" || e.key === "d" || e.key === "D" || e.code === "KeyD";
     if (isLeft) keys.left = false;
     if (isRight) keys.right = false;
   });
@@ -690,5 +706,8 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Start Animation Loop
-  gameLoop();
+  animationFrameId = requestAnimationFrame((timestamp) => {
+    lastTime = timestamp;
+    gameLoop(timestamp);
+  });
 });
