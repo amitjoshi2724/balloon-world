@@ -105,6 +105,9 @@ document.addEventListener("DOMContentLoaded", () => {
   const GUN_STROKE = 8;
   const MAX_MISSES = 3; // matching instructions ("If you miss three balloons the game is over")
 
+  // Smooth continuous rotation speed matching Spaceship-Flight (~210 deg/sec)
+  const ROTATION_SPEED = 3.5; 
+
   // Game State
   let active = false;
   let paused = false;
@@ -120,6 +123,19 @@ document.addEventListener("DOMContentLoaded", () => {
   let balloonTimer = null;
   let animationFrameId = null;
 
+  // Continuous keyboard input tracking
+  const keys = {
+    left: false,
+    right: false
+  };
+
+  // Helper to remove focus from buttons so space/arrow keys are not trapped
+  function blurActiveElement() {
+    if (document.activeElement && document.activeElement.blur && document.activeElement !== document.body) {
+      document.activeElement.blur();
+    }
+  }
+
   // Gun Math
   function getGunTip() {
     const rad = (gunAngle * Math.PI) / 180.0;
@@ -129,16 +145,15 @@ document.addEventListener("DOMContentLoaded", () => {
     };
   }
 
-  // Disallow cannon movement during pause, game over, or inactive state
   function turnLeft() {
     if (!active || paused || isGameOver) return;
-    gunAngle = Math.max(185.0, gunAngle - 5.0);
+    gunAngle = Math.max(185.0, gunAngle - ROTATION_SPEED);
     mouseActive = false;
   }
 
   function turnRight() {
     if (!active || paused || isGameOver) return;
-    gunAngle = Math.min(355.0, gunAngle + 5.0);
+    gunAngle = Math.min(355.0, gunAngle + ROTATION_SPEED);
     mouseActive = false;
   }
 
@@ -225,6 +240,16 @@ document.addEventListener("DOMContentLoaded", () => {
   function update() {
     if (!active || paused || isGameOver) return;
 
+    // Smooth continuous cannon turning (matching Spaceship-Flight mechanics)
+    if (keys.left) {
+      gunAngle = Math.max(185.0, gunAngle - ROTATION_SPEED);
+      mouseActive = false;
+    }
+    if (keys.right) {
+      gunAngle = Math.min(355.0, gunAngle + ROTATION_SPEED);
+      mouseActive = false;
+    }
+
     // Update Bullets
     for (let i = bullets.length - 1; i >= 0; i--) {
       const b = bullets[i];
@@ -236,8 +261,7 @@ document.addEventListener("DOMContentLoaded", () => {
       b.x += b.dx;
       b.y += b.dy;
 
-      // Check bullet collisions with active balloons
-      // Bullet pierces through popped balloons and does NOT disappear upon hit
+      // Check bullet collisions with active balloons (bullet pierces through popped balloons)
       for (const bal of balloons) {
         checkCollision(b, bal);
       }
@@ -386,10 +410,14 @@ document.addEventListener("DOMContentLoaded", () => {
     balloons = [];
     gunAngle = 270.0;
     mouseActive = false;
+    keys.left = false;
+    keys.right = false;
 
     pauseBtn.disabled = false;
     playBtn.disabled = true;
     leaderboardBtn.disabled = true;
+
+    blurActiveElement();
 
     if (balloonTimer) clearInterval(balloonTimer);
     balloonTimer = setInterval(spawnBalloon, 1800);
@@ -404,6 +432,9 @@ document.addEventListener("DOMContentLoaded", () => {
     pauseBtn.disabled = true;
     playBtn.disabled = false;
     mouseActive = false;
+    keys.left = false;
+    keys.right = false;
+    blurActiveElement();
     if (balloonTimer) clearInterval(balloonTimer);
   }
 
@@ -412,6 +443,9 @@ document.addEventListener("DOMContentLoaded", () => {
     paused = false;
     pauseBtn.disabled = false;
     playBtn.disabled = true;
+    keys.left = false;
+    keys.right = false;
+    blurActiveElement();
     if (balloonTimer) clearInterval(balloonTimer);
     balloonTimer = setInterval(spawnBalloon, 1800);
   }
@@ -420,10 +454,13 @@ document.addEventListener("DOMContentLoaded", () => {
     isGameOver = true;
     active = false;
     mouseActive = false;
+    keys.left = false;
+    keys.right = false;
     if (balloonTimer) clearInterval(balloonTimer);
     pauseBtn.disabled = true;
     playBtn.disabled = true;
     leaderboardBtn.disabled = false;
+    blurActiveElement();
 
     playGameOverSound();
   }
@@ -433,11 +470,14 @@ document.addEventListener("DOMContentLoaded", () => {
     paused = false;
     isGameOver = false;
     mouseActive = false;
+    keys.left = false;
+    keys.right = false;
     if (balloonTimer) clearInterval(balloonTimer);
     bullets = [];
     balloons = [];
     gameScreen.classList.remove("active");
     startScreen.classList.add("active");
+    blurActiveElement();
   }
 
   // Leaderboard Persistence (localStorage) - No Dummy Data
@@ -503,6 +543,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // Event Listeners
   startBtn.addEventListener("click", () => {
+    blurActiveElement();
     startScreen.classList.remove("active");
     gameScreen.classList.add("active");
     startGame();
@@ -510,26 +551,42 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   menuLeaderboardBtn.addEventListener("click", () => {
+    blurActiveElement();
     openLeaderboard(false);
   });
 
   returnMenuBtn.addEventListener("click", () => {
+    blurActiveElement();
     returnToMainMenu();
   });
 
-  pauseBtn.addEventListener("click", pauseGame);
-  playBtn.addEventListener("click", resumeGame);
-  restartBtn.addEventListener("click", startGame);
+  pauseBtn.addEventListener("click", () => {
+    blurActiveElement();
+    pauseGame();
+  });
+
+  playBtn.addEventListener("click", () => {
+    blurActiveElement();
+    resumeGame();
+  });
+
+  restartBtn.addEventListener("click", () => {
+    blurActiveElement();
+    startGame();
+  });
 
   leaderboardBtn.addEventListener("click", () => {
+    blurActiveElement();
     openLeaderboard(isGameOver);
   });
 
   leaderboardClose.addEventListener("click", () => {
+    blurActiveElement();
     leaderboardOverlay.classList.remove("active");
   });
 
   leaderboardOkBtn.addEventListener("click", () => {
+    blurActiveElement();
     leaderboardOverlay.classList.remove("active");
   });
 
@@ -566,12 +623,13 @@ document.addEventListener("DOMContentLoaded", () => {
 
   canvas.addEventListener("mousedown", (e) => {
     if (!active || paused || isGameOver) return;
+    blurActiveElement();
     if (e.button === 0) {
       fireBullet();
     }
   });
 
-  // Keyboard Controls - Ignored when paused (except P to unpause)
+  // Keyboard Controls (Smooth continuous turning matching Spaceship-Flight)
   window.addEventListener("keydown", (e) => {
     if (!gameScreen.classList.contains("active")) return;
 
@@ -583,14 +641,45 @@ document.addEventListener("DOMContentLoaded", () => {
 
     if (!active || paused || isGameOver) return;
 
-    if (e.key === "ArrowLeft") {
-      turnLeft();
-    } else if (e.key === "ArrowRight") {
-      turnRight();
-    } else if (e.key === "ArrowUp" || e.key === " ") {
+    const isLeft = e.key === "ArrowLeft" || e.code === "ArrowLeft" || e.key === "a" || e.key === "A" || e.code === "KeyA";
+    const isRight = e.key === "ArrowRight" || e.code === "ArrowRight" || e.key === "d" || e.key === "D" || e.code === "KeyD";
+    const isFire = e.key === "ArrowUp" || e.code === "ArrowUp" || e.key === " " || e.code === "Space" || e.key === "w" || e.key === "W" || e.code === "KeyW";
+
+    if (isLeft) {
       e.preventDefault();
-      fireBullet();
+      if (!keys.left) {
+        // Immediate step on initial keydown for snappy taps
+        gunAngle = Math.max(185.0, gunAngle - ROTATION_SPEED);
+      }
+      keys.left = true;
+      mouseActive = false;
+    } else if (isRight) {
+      e.preventDefault();
+      if (!keys.right) {
+        // Immediate step on initial keydown for snappy taps
+        gunAngle = Math.min(355.0, gunAngle + ROTATION_SPEED);
+      }
+      keys.right = true;
+      mouseActive = false;
+    } else if (isFire) {
+      e.preventDefault();
+      if (!e.repeat) {
+        fireBullet();
+      }
     }
+  });
+
+  window.addEventListener("keyup", (e) => {
+    const isLeft = e.key === "ArrowLeft" || e.code === "ArrowLeft" || e.key === "a" || e.key === "A" || e.code === "KeyA";
+    const isRight = e.key === "ArrowRight" || e.code === "ArrowRight" || e.key === "d" || e.code === "KeyD";
+    if (isLeft) keys.left = false;
+    if (isRight) keys.right = false;
+  });
+
+  // Reset keys on window blur
+  window.addEventListener("blur", () => {
+    keys.left = false;
+    keys.right = false;
   });
 
   // Check query param to auto-start for testing/debugging

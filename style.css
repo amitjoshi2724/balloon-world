@@ -783,3 +783,8 @@ kbd {
     margin-bottom: calc(512px * (calc((100vw - 20px) / 600) - 1));
   }
 }
+
+
+.swing-btn:focus {
+  outline: none;
+}
