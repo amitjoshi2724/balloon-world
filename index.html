@@ -2,7 +2,8 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <meta name="mobile-web-app-capable" content="yes">
   <title>Balloon World</title>
   <meta name="description" content="Balloon World - Classic retro balloon popping arcade game ported to HTML5, CSS3, and JavaScript.">
   <link rel="icon" type="image/jpeg" href="new_favicon.jpeg">
@@ -13,15 +14,17 @@
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Balloon World">
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=1.0.3">
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 </head>
 <body>
   <div class="desktop-container">
-    <!-- Retro Application Window -->
-    <div class="app-window" id="app-window">
+    <!-- Responsive Window Scaler (Preserves pixel-perfect layout while fitting 100% inside any mobile viewport) -->
+    <div class="window-scaler" id="window-scaler">
+      <!-- Retro Application Window -->
+      <div class="app-window" id="app-window">
       <!-- Title Bar -->
       <div class="window-titlebar">
         <div class="window-controls">
@@ -92,11 +95,11 @@
                 <span class="control-desc">Smooth Aim</span>
               </div>
               <div class="control-item">
-                <span class="control-keys">🖱️ Mouse</span>
+                <span class="control-keys">🖱️ / 📱 Touch</span>
                 <span class="control-desc">Aim Crosshair</span>
               </div>
               <div class="control-item">
-                <span class="control-keys"><kbd>Space</kbd> / <kbd>↑</kbd> / Click</span>
+                <span class="control-keys"><kbd>Space</kbd> / Tap</span>
                 <span class="control-desc">Fire Dart</span>
               </div>
               <div class="control-item">
@@ -177,6 +180,7 @@
         </div>
       </div>
     </div>
+    </div> <!-- /.window-scaler -->
 
     <!-- Desktop Footer Info -->
     <div class="desktop-footer">
@@ -188,6 +192,6 @@
     </div>
   </div>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=1.0.3"></script>
 </body>
 </html>

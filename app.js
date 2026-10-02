@@ -27,6 +27,63 @@ document.addEventListener("DOMContentLoaded", () => {
   const submitScoreBtn = document.getElementById("submit-score-btn");
   const scoresList = document.getElementById("scores-list");
 
+  // Dynamic Viewport Scaler (matching Spaceship Flight technique)
+  // Dynamically uses visualViewport width and height to fit 100% inside vertical or horizontal screens
+  const windowScaler = document.getElementById("window-scaler");
+  const desktopFooter = document.querySelector(".desktop-footer");
+
+  function resizeToViewport() {
+    const screenW = window.visualViewport ? window.visualViewport.width : window.innerWidth;
+    const screenH = window.visualViewport ? window.visualViewport.height : window.innerHeight;
+
+    // Desktop view with ample headroom: native 1.0 scale
+    if (screenW >= 660 && screenH >= 580) {
+      document.documentElement.style.setProperty("--game-scale", "1");
+      if (windowScaler) {
+        windowScaler.style.width = "600px";
+        windowScaler.style.height = "512px";
+      }
+      if (desktopFooter) {
+        desktopFooter.style.display = "flex";
+      }
+      return;
+    }
+
+    // Mobile / Constrained viewport (both vertical portrait and horizontal landscape):
+    if (desktopFooter) {
+      desktopFooter.style.display = "none";
+    }
+
+    // Calculate available dimensions with edge safety padding
+    const paddingX = 8;
+    const paddingY = 8;
+    const availW = Math.max(140, screenW - paddingX);
+    const availH = Math.max(140, screenH - paddingY);
+
+    // Scale down proportionally so the ENTIRE 600x512 window fits within available width AND height
+    const scaleW = availW / 600;
+    const scaleH = availH / 512;
+    const scale = Math.min(scaleW, scaleH, 1.0);
+
+    document.documentElement.style.setProperty("--game-scale", scale.toFixed(4));
+    if (windowScaler) {
+      windowScaler.style.width = Math.floor(600 * scale) + "px";
+      windowScaler.style.height = Math.floor(512 * scale) + "px";
+    }
+  }
+
+  window.addEventListener("resize", resizeToViewport, { passive: true });
+  window.addEventListener("orientationchange", () => {
+    setTimeout(resizeToViewport, 50);
+    setTimeout(resizeToViewport, 200);
+  });
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener("resize", resizeToViewport);
+    window.visualViewport.addEventListener("scroll", resizeToViewport);
+  }
+  resizeToViewport();
+
+
   // Sound Control Elements
   const menuSoundBtn = document.getElementById("menu-sound-btn");
   const menuSoundIcon = document.getElementById("menu-sound-icon");
@@ -758,6 +815,47 @@ document.addEventListener("DOMContentLoaded", () => {
       fireBullet();
     }
   });
+
+  // Touch controls for mobile / tablet devices (drag to aim, tap/release to fire)
+  function getTouchCanvasPos(touch) {
+    const rect = canvas.getBoundingClientRect();
+    const scaleX = CANVAS_WIDTH / rect.width;
+    const scaleY = CANVAS_HEIGHT / rect.height;
+    return {
+      x: (touch.clientX - rect.left) * scaleX,
+      y: (touch.clientY - rect.top) * scaleY
+    };
+  }
+
+  canvas.addEventListener("touchstart", (e) => {
+    if (!active || paused || isGameOver) return;
+    e.preventDefault();
+    blurActiveElement();
+    if (e.touches && e.touches.length > 0) {
+      const pos = getTouchCanvasPos(e.touches[0]);
+      aimAt(pos.x, pos.y);
+      fireBullet();
+    }
+  }, { passive: false });
+
+  canvas.addEventListener("touchmove", (e) => {
+    if (!active || paused || isGameOver) return;
+    e.preventDefault();
+    if (e.touches && e.touches.length > 0) {
+      const pos = getTouchCanvasPos(e.touches[0]);
+      aimAt(pos.x, pos.y);
+    }
+  }, { passive: false });
+
+  canvas.addEventListener("touchend", (e) => {
+    if (!active || paused || isGameOver) return;
+    e.preventDefault();
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      const pos = getTouchCanvasPos(e.changedTouches[0]);
+      aimAt(pos.x, pos.y);
+    }
+  }, { passive: false });
+
 
   // Keyboard Controls (Smooth cushioned rotation, completely isolated from trackpad interference)
   window.addEventListener("keydown", (e) => {

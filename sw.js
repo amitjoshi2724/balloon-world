@@ -3,7 +3,7 @@
  * Provides 100% offline gameplay, persistent asset caching, and background updates.
  */
 
-const CACHE_NAME = 'balloon-world-v1.0.1';
+const CACHE_NAME = 'balloon-world-v1.0.3';
 const CORE_ASSETS = [
   './',
   './index.html',
@@ -71,7 +71,9 @@ self.addEventListener('fetch', (event) => {
 
   const isNavigation = event.request.mode === 'navigate';
   const isScriptOrHtml = event.request.destination === 'script' ||
+                         event.request.destination === 'style' ||
                          url.pathname.endsWith('.js') ||
+                         url.pathname.endsWith('.css') ||
                          url.pathname.endsWith('.html');
 
   if (isNavigation || isScriptOrHtml) {
